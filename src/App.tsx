@@ -1,5 +1,7 @@
 import { Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
+import UserInformation from './pages/Me';
+import Users from './pages/Users';
   // import Login from './pages/Login';
   // import Register from './pages/Register';
 
@@ -22,6 +24,9 @@ function App() {
         <Route path="/" element={<Home />} />
         {/* <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} /> */}
+        <Route path="/users" element={<Users />} />
+        <Route path="/me" element={<UserInformation />} />
+       
       </Routes>
     </div>
   );
