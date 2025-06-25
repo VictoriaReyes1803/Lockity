@@ -1,4 +1,6 @@
 import { useState } from "react";
+import Sidebar from "../components/sidebar";
+import Toolbar from "../components/Toolbar";
 
 export default function UserInformation() {
   const [form, setForm] = useState({
@@ -15,33 +17,15 @@ export default function UserInformation() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("User updated:", form);
-    // Aquí iría la lógica para enviar al backend
+    
   };
 
   return (
-    <div className="flex min-h-screen bg-[#1a1a1a] text-white">
+    <div className="flex min-h-screen bg-[#background-color: #2E2E2E;] text-white">
       
-      {/* Sidebar */}
-      <aside className="w-16 bg-[#2e2d2d] flex flex-col items-center py-4 space-y-6 text-xl">
-        <span>👤</span>
-        <span>🔒</span>
-        <span>👥</span>
-        <span>📊</span>
-        <span>⚙️</span>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 p-6">
-        {/* Header */}
-        <header className="flex justify-between items-center mb-10">
-          <div className="flex items-center space-x-2">
-            <img src="/images/user.svg" alt="user" className="w-10 h-10 rounded-full border border-gray-400" />
-            <span className="text-lg font-semibold">Hello Olivia</span>
-          </div>
-          <h1 className="text-2xl font-bold">User Information</h1>
-        </header>
-
-        {/* Formulario */}
+      <Sidebar />
+       <div className="flex-1 ml-16">
+        <Toolbar />
         <form
           onSubmit={handleSubmit}
           className="max-w-xl mx-auto bg-[#2e2d2d] p-8 rounded-md space-y-4"
@@ -94,7 +78,7 @@ export default function UserInformation() {
 
           <button
             type="submit"
-            className="w-full mt-6 bg-[#FFD166] text-black font-semibold py-2 rounded-full hover:brightness-90 transition"
+            className="w-full mt-6 bg-[#FFD166] text-black font-semibold py-2 hover:brightness-90 transition"
           >
             Update
           </button>
