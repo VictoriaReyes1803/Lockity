@@ -1,30 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
 import Sidebar from "../components/sidebar";
 import Toolbar from "../components/Toolbar";
+import { Me, UpdateUser } from "../services/authService";
+import type { User } from "../models/User";
 
 export default function UserInformation() {
-  const [form, setForm] = useState({
-    name: "Victoria",
-    lastname: "Jaime",
-    secondLastname: "Reyes",
-    email: "22170152@uttcampus.edu.mx",
+ 
+  
+  const [form, setForm] = useState<User>({
+    name: "",
+    last_name: "",
+    second_last_name: "",
+    email: "",
   });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const user = await Me();
+        console.log("User data fetched:", user);
+        setForm(user);
+      } catch (err) {
+        console.error("Failed to load user:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("User updated:", form);
-    
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    const updated = await UpdateUser(form);
+    setForm(updated);
+   
+  
+  } catch (err) {
+    console.error("Failed to update user:", err);
+
+  }
+};
+
+
+  
 
   return (
     <div className="flex min-h-screen bg-[#background-color: #2E2E2E;] text-white">
       
       <Sidebar />
-       <div className="flex-1 ml-16">
+       <div className="flex-1 ml-[4.3rem]">
         <Toolbar />
         <form
           onSubmit={handleSubmit}
@@ -46,8 +75,8 @@ export default function UserInformation() {
           <div>
             <label className="block text-sm mb-1">Last Name</label>
             <input
-              name="lastname"
-              value={form.lastname}
+              name="last_name"
+              value={form.last_name}
               onChange={handleChange}
               className="w-full bg-[#444] text-white px-4 py-2 rounded"
               type="text"
@@ -57,8 +86,8 @@ export default function UserInformation() {
           <div>
             <label className="block text-sm mb-1">Second Last Name</label>
             <input
-              name="secondLastname"
-              value={form.secondLastname}
+              name="second_last_name"
+              value={form.second_last_name}
               onChange={handleChange}
               className="w-full bg-[#444] text-white px-4 py-2 rounded"
               type="text"
