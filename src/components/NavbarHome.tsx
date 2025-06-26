@@ -1,4 +1,33 @@
 import { Link, useLocation } from 'react-router-dom';
+import { generateCodeVerifier, generateCodeChallenge } from '../utils/pkce';
+
+const url = import.meta.env.VITE_BACKEND_URL;
+
+
+const handle = async () => {
+  const codeVerifier = generateCodeVerifier();
+  const codeChallenge = await generateCodeChallenge(codeVerifier);
+  const state = crypto.randomUUID();
+
+  sessionStorage.setItem('pkce_code_verifier', codeVerifier);
+  sessionStorage.setItem('oauth_state', state);
+
+  const clientId = import.meta.env.VITE_CLIENT_ID;
+  const redirectUri = import.meta.env.VITE_REDIRECT_URI;
+
+  const queryParams = new URLSearchParams({
+    response_type: 'code',
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    scope: '',
+    state,
+    code_challenge: codeChallenge,
+    code_challenge_method: 'S256',
+  });
+
+  window.location.href = `${url}oauth/authorize?${queryParams.toString()}`;
+};
+
 
 function NavbarHome() {
   const location = useLocation();
@@ -7,6 +36,14 @@ function NavbarHome() {
 interface IsActiveFn {
     (path: string): string;
 }
+
+
+
+const handleRegister = () => {
+  window.location.href = `${import.meta.env.VITE_BACKEND_URL}/register`;
+};
+
+
 
 const isActive: IsActiveFn = (path: string): string =>
     currentPath === path
@@ -24,12 +61,14 @@ const isActive: IsActiveFn = (path: string): string =>
         <Link to="/" className={isActive('/')}>
           Home
         </Link>
-        <Link to="/login" className={isActive('/login')}>
-          Sign In
-        </Link>
-        <Link to="/register" className={isActive('/register')}>
-          Register
-        </Link>
+        <button
+      onClick={handle}
+      className="text-white hover:underline underline-offset-4 transition"
+    >
+      Access
+    </button>
+
+    
       </div>
 
    

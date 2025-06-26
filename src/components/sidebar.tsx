@@ -9,7 +9,7 @@ const navItems = [
 
 const Sidebar = () => {
   return (
-    <aside className="group fixed top-0 left-0 h-screen w-16 hover:w-52 bg-[#2e2e2e] text-white shadow-md flex flex-col items-center py-4 transition-all duration-300 z-50 rounded-tr-2xl rounded-br-2xl overflow-hidden">
+    <aside className="group fixed top-0 left-0 h-screen w-16 hover:w-52 bg-[#555555] text-white shadow-md flex flex-col items-center py-4 transition-all duration-300 z-50 rounded-tr-2xl rounded-br-2xl overflow-hidden">
       
       <div className="mb-6">
         <img src="/images/logosin.svg" alt="Logo" className="w-10 h-10" />
