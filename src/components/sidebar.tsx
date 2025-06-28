@@ -1,4 +1,7 @@
 // components/Sidebar.tsx
+import {useState ,useEffect } from "react";
+import {Me} from "../services/authService"
+import type { User } from "../models/User";
 const navItems = [
   
   { label: "Lockers", icon: "/images/Locker Icon.svg", route: "/lockers" },
@@ -8,6 +11,23 @@ const navItems = [
 ];
 
 const Sidebar = () => {
+   const [user, setUser] = useState<User | null>(null);
+  
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+            const fetchedUser = await Me();
+            sessionStorage.setItem("user", JSON.stringify(fetchedUser));
+            setUser(fetchedUser);
+  
+        } catch (err) {
+          console.error("Failed to load user:", err);
+        }
+      };
+  
+      fetchData();
+    }, []);
+  
   return (
     <aside className="group fixed top-0 left-0 h-screen w-16 hover:w-52 bg-[#555555] text-white shadow-md flex flex-col items-center py-4 transition-all duration-300 z-50 rounded-tr-2xl rounded-br-2xl overflow-hidden">
       
@@ -22,7 +42,7 @@ const Sidebar = () => {
         >
             <img src="/images/User Icon.svg" alt="User" className="w-5 h-5" />
             <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                Olivia
+                {(user?.name ?? "") + " " + (user?.last_name ?? "")}
             </span>
         </button>
     </div>

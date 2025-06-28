@@ -1,5 +1,6 @@
 import type { User } from "../models/User";
-import api from "./interceptor";
+import {getApi} from "./interceptor";
+const api = getApi("laravel");
 
 export const Me = async (): Promise<User> => {
 

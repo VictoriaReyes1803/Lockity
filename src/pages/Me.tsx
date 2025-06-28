@@ -54,7 +54,7 @@ export default function UserInformation() {
       
       <Sidebar />
        <div className="flex-1 ml-[4.3rem]">
-        <Toolbar />
+        <Toolbar title="Me" />
         <form
           onSubmit={handleSubmit}
           className="max-w-xl mx-auto bg-[#2e2d2d] p-8 rounded-md space-y-4"
