@@ -12,3 +12,10 @@ export interface Users {
   email: string;
   role: string;
 }
+export interface Userlocker{
+email: string;
+role: string;
+locker_id: number;
+compartment_number: number;
+
+}

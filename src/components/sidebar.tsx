@@ -1,6 +1,8 @@
 // components/Sidebar.tsx
 import {useState ,useEffect } from "react";
 import {Me} from "../services/authService"
+import { Logout } from "../services/authService";
+
 import type { User } from "../models/User";
 const navItems = [
   
@@ -47,7 +49,6 @@ const Sidebar = () => {
         </button>
     </div>
       
-      {/* Navegación */}
       <nav className="flex flex-col gap-4 w-full mt-4">
         {navItems.map((item, i) => (
           <a
@@ -63,14 +64,25 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      {/* Logout abajo */}
       <div className="mt-auto mb-6 w-full px-2">
-        <button className="flex items-center gap-2 bg-[#2e2d2d] hover:bg-[#1f1f1f] px-3 py-2 w-full rounded-lg text-sm transition">
-          <img src="/images/Logout.svg" alt="Logout" className="w-5 h-5" />
-          <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            Logout
-          </span>
-        </button>
+        <button
+        className="flex items-center gap-2 bg-[#2e2d2d] hover:bg-[#1f1f1f] px-3 py-2 w-full rounded-lg text-sm transition"
+        onClick={async () => {
+          try {
+            await Logout();
+            sessionStorage.clear();
+            window.location.href = "/";  
+          } catch (err) {
+            console.error("Error during logout:", err);
+          }
+        }}
+      >
+        <img src="/images/Logout.svg" alt="Logout" className="w-5 h-5" />
+        <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          Logout
+        </span>
+      </button>
+
       </div>
     </aside>
   );

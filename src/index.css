@@ -2,7 +2,7 @@
 
 :root {
 
-  line-height: 1.5;
+ 
   font-weight: 400;
 
   font-synthesis: none;
@@ -33,7 +33,7 @@ button {
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
-  font-family: roboto;
+  font-family: 'Roboto';
   background-color: #2E2E2E;
   cursor: pointer;
 }
@@ -54,3 +54,7 @@ button {
 @tailwind components;
 @tailwind utilities;
 
+
+button, input, optgroup, select, textarea {
+  font-family: 'Roboto', sans-serif !important;
+}
