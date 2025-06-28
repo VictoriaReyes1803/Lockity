@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
-
+import Loader from "../components/Loader";
 import Sidebar from "../components/sidebar";
 import Toolbar from "../components/Toolbar";
 import { Me, UpdateUser } from "../services/authService";
 import type { User } from "../models/User";
+import { Toast } from 'primereact/toast';
+import { useRef } from "react";
+
 
 export default function UserInformation() {
- 
-  
+  const [loading, setLoading] = useState<boolean>(false);
+  const toast = useRef<Toast>(null);
+
   const [form, setForm] = useState<User>({
     name: "",
     last_name: "",
@@ -17,12 +21,15 @@ export default function UserInformation() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const user = await Me();
         console.log("User data fetched:", user);
         setForm(user);
       } catch (err) {
         console.error("Failed to load user:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -38,11 +45,25 @@ export default function UserInformation() {
   try {
     const updated = await UpdateUser(form);
     setForm(updated);
+    toast.current?.show({
+      severity: 'success',
+      summary: 'Update Successful',
+      detail: 'Your information has been updated successfully.',
+      life: 3000
+    });
    
   
   } catch (err) {
     console.error("Failed to update user:", err);
+    toast.current?.show({
+      severity: 'error',
+      summary: 'Update Failed',
+      detail: 'There was an error updating your information.',
+      life: 3000
+    });
 
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -54,7 +75,9 @@ export default function UserInformation() {
       
       <Sidebar />
        <div className="flex-1 ml-[4.3rem]">
-        <Toolbar title="Me" />
+        <Toolbar title="Me" /><Toast ref={toast} />
+
+
         <form
           onSubmit={handleSubmit}
           className="max-w-xl mx-auto bg-[#2e2d2d] p-8 rounded-md space-y-4"
@@ -113,6 +136,9 @@ export default function UserInformation() {
           </button>
         </form>
       </div>
+      {loading && <Loader />}
+
     </div>
+    
   );
 }

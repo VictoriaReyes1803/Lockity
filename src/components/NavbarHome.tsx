@@ -39,12 +39,6 @@ interface IsActiveFn {
 
 
 
-const handleRegister = () => {
-  window.location.href = `${import.meta.env.VITE_BACKEND_URL}/register`;
-};
-
-
-
 const isActive: IsActiveFn = (path: string): string =>
     currentPath === path
         ? 'underline hover:decoration-[#A3A8AF] hover:text-[#A3A8AF] underline-offset-8 decoration-[#A3A8AF] decoration-2'
@@ -61,9 +55,12 @@ const isActive: IsActiveFn = (path: string): string =>
         <Link to="/" className={isActive('/')}>
           Home
         </Link>
+
+
+
         <button
       onClick={handle}
-      className="text-white hover:underline underline-offset-4 transition"
+      className="space-x-10 text-sm font-semibold hover:underline underline-offset-4 transition"
     >
       Access
     </button>

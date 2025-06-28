@@ -1,16 +1,23 @@
 import Sidebar from "../components/sidebar";
 import Toolbar from "../components/Toolbar";
 import { useEffect, useState } from "react";
+import Loader from "../components/Loader";
 import type { Users } from "../models/User";
+import { Toast } from 'primereact/toast';
+import { useRef } from "react";
+
 import { getUsersWithLockers, putUserRole } from "../services/usersService";
 
 export default function Users() {
+  const toast = useRef<Toast>(null);
+
   const [users, setUsers] = useState<Users[]>([]);
   const [selectedUser, setSelectedUser] = useState<Users | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [newRole, setNewRole] = useState<string>("user");
   const [selectedLocker, setSelectedLocker] = useState<number | null>(null);
   const [selectedCompartment, setSelectedCompartment] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [mode, setMode] = useState<"edit" | "add">("edit");
   const [newEmail, setNewEmail] = useState<string>("");
@@ -24,12 +31,15 @@ export default function Users() {
   const compartments = [1, 2, 3, 4, 5];
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
       const data = await getUsersWithLockers("1", 1, 10);
       console.log("Fetched users:", data);
       setUsers(data);
     } catch (error) {
       console.error("Failed to fetch users:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,6 +77,8 @@ export default function Users() {
 
       <div className="flex-1 ml-16">
         <Toolbar title="Users Management" />
+        <Toast ref={toast} />
+
         <div className="p-6">
           <button className="bg-[#FFD166] text-black text-[2rem] rounded-full w-12 h-12 shadow-lg hover:scale-105 transition"
           onClick={openAddModal}>
@@ -191,11 +203,18 @@ export default function Users() {
               alert("Please select locker and compartment");
               return;
             }
+            setLoading(true);
             try {
               if (mode === "edit" && selectedUser) {
                 await putUserRole(selectedLocker, selectedCompartment, {
                   user_email: selectedUser.email,
                   role: newRole,
+                });
+                toast.current?.show({
+                  severity: 'success',
+                  summary: 'Role Updated',
+                  detail: `Role for ${selectedUser.name} updated to ${newRole}`,
+                  life: 3000
                 });
               }
               if (mode === "add") {
@@ -203,11 +222,28 @@ export default function Users() {
                   user_email: newEmail,
                   role: newRole,
                 });
+                toast.current?.show({
+                  severity: 'success',
+                  summary: 'User Added',
+                  detail: `User with email ${newEmail} added with role ${newRole}`,
+                  life: 3000
+                });
               }
               closeModal();
+              
               fetchUsers();
             } catch (e) {
               console.error("Failed to save", e);
+              toast.current?.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Failed to save changes',
+                life: 3000
+              });
+            }
+            finally
+            {
+              setLoading(false);
             }
           }}
         >
@@ -217,7 +253,12 @@ export default function Users() {
     </div>
   </div>
 )}
+{loading && <Loader />}
+
 
     </div>
+
+    
   );
+  
 }

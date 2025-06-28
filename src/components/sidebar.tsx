@@ -1,6 +1,10 @@
 // components/Sidebar.tsx
 import {useState ,useEffect } from "react";
+import Loader from "../components/Loader";
 import {Me} from "../services/authService"
+import { Toast } from 'primereact/toast';
+import { useRef } from "react";
+
 import { Logout } from "../services/authService";
 
 import type { User } from "../models/User";
@@ -13,10 +17,13 @@ const navItems = [
 ];
 
 const Sidebar = () => {
+  const [loading, setLoading] = useState<boolean>(false);
    const [user, setUser] = useState<User | null>(null);
-  
+  const toast = useRef<Toast>(null);
+
     useEffect(() => {
       const fetchData = async () => {
+        setLoading(true);
         try {
             const fetchedUser = await Me();
             sessionStorage.setItem("user", JSON.stringify(fetchedUser));
@@ -25,14 +32,19 @@ const Sidebar = () => {
         } catch (err) {
           console.error("Failed to load user:", err);
         }
+        finally {
+          setLoading(false);
+        }
       };
   
       fetchData();
     }, []);
   
   return (
+
     <aside className="group fixed top-0 left-0 h-screen w-16 hover:w-52 bg-[#555555] text-white shadow-md flex flex-col items-center py-4 transition-all duration-300 z-50 rounded-tr-2xl rounded-br-2xl overflow-hidden">
-      
+      <Toast ref={toast} />
+
       <div className="mb-6">
         <img src="/images/logosin.svg" alt="Logo" className="w-10 h-10" />
       </div>
@@ -71,6 +83,12 @@ const Sidebar = () => {
           try {
             await Logout();
             sessionStorage.clear();
+            toast.current?.show({
+              severity: 'success',
+              summary: 'Logout Successful',
+              detail: 'You have been logged out successfully.',
+              life: 3000
+            });
             window.location.href = "/";  
           } catch (err) {
             console.error("Error during logout:", err);
@@ -82,9 +100,11 @@ const Sidebar = () => {
           Logout
         </span>
       </button>
+      {loading && <Loader />  }
 
       </div>
     </aside>
+  
   );
 };
 

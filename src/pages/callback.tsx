@@ -1,6 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState} from 'react';
+import Loader from "../components/Loader";
+
 
 const Callback = () => {
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchToken = async () => {
       const params = new URLSearchParams(window.location.search);
@@ -11,11 +14,13 @@ const Callback = () => {
 
       if (state !== storedState) {
         alert('CSRF detected: state mismatch.');
+        setLoading(false);
         return;
       }
 
       if (!code || !codeVerifier) {
         alert('Missing code or verifier');
+        setLoading(false);
         return;
       }
 
@@ -43,17 +48,30 @@ console.log('Exchanging code for token with body:', body.toString());
           console.log('Token received:', data.access_token);
           window.location.href = '/me'; 
         } else {
-          console.error('Token error:', data);
+          setLoading(false);
+
         }
       } catch (err) {
         console.error('Failed to exchange token:', err);
+        setLoading(false);
       }
     };
 
     fetchToken();
   }, []);
 
-   <p className="text-center">Validating code...</p>;
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
+      {loading ? (
+        <Loader />
+      ) : (
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Authentication Complete</h1>
+          <p className="text-lg">You can now close this window.</p>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default Callback;
