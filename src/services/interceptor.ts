@@ -1,22 +1,28 @@
-// src/services/interceptor.ts
-import axios from "axios";
+// src/services/api.ts
+import axios, { type AxiosInstance } from "axios";
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL,
-  headers: {
-    Accept: "application/json",
-  },
-});
+type Backend = "laravel" | "nest";
 
-api.interceptors.request.use(
-  (config) => {
+export const getApi = (backend: Backend): AxiosInstance => {
+  const baseURL =
+    backend === "laravel"
+      ? import.meta.env.VITE_BACKEND_URL
+      : import.meta.env.VITE_NEST_URL;
+
+  const instance = axios.create({
+    baseURL,
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  instance.interceptors.request.use((config) => {
     const token = localStorage.getItem("access_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
-  },
-  (error) => Promise.reject(error)
-);
+  });
 
-export default api;
+  return instance;
+};
