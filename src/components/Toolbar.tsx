@@ -5,8 +5,9 @@ import type { User } from "../models/User";
 
 interface ToolbarProps {
   title: string;
+  onChangeOrganization?: (id: string) => void; 
 }
-const Toolbar  = ({ title }: ToolbarProps) => {
+const Toolbar  = ({ title, onChangeOrganization }: ToolbarProps) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -40,6 +41,15 @@ const Toolbar  = ({ title }: ToolbarProps) => {
 
    
       <h1 className="text-lg font-semibold">{title}</h1>
+      <select
+  onChange={(e) => onChangeOrganization?.(e.target.value)}
+  className="bg-[#444] text-white rounded px-2 py-1 ml-4"
+>
+  <option value="1">Organization 1</option>
+  <option value="2">Organization 2</option>
+  <option value="3">Organization 3</option>
+</select>
+
     </header>
   );
 };

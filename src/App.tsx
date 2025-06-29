@@ -4,6 +4,9 @@ import Callback from './pages/callback';
 import UserInformation from './pages/Me';
 import Users from './pages/Users';
 import PrivateRoute from "./guards/authguard";
+import Haslocker from './guards/haslocker';
+import CreateOrganization from './pages/welcome';
+import NotFound from './pages/notfound';
 
 function App() {
  return (
@@ -13,24 +16,13 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
        <Route path="/callback" element={<Callback />} />
-    
-         <Route
-          path="/me"
-          element={
+       <Route path="/welcome" element={<PrivateRoute> <CreateOrganization /></PrivateRoute>} />
+      <Route  path="/me" element={<PrivateRoute> <Haslocker> <UserInformation /> </Haslocker> </PrivateRoute>} />
+      <Route path="/users" element={
             <PrivateRoute>
-              <UserInformation />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/users"
-          element={
-            <PrivateRoute>
-              <Users />
-            </PrivateRoute>
-          }
-        />
-       
+              <Haslocker>
+              <Users /></Haslocker></PrivateRoute>}/>
+       <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
   );

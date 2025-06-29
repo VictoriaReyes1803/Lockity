@@ -7,10 +7,14 @@ export const Me = async (): Promise<User> => {
   
 
   const response = await api.get(`${pre}me`);
-  console.log("User info response:", response.data.data);
   return response.data.data as User;
 
 };
+
+export const haslocker = async (): Promise<boolean> => {
+  const response = await api.get(`${pre}has-lockers`);
+  return response.data.data as boolean;
+}
 
 export const UpdateUser = async (user: User): Promise<User> => {
   const response = await api.put(`${pre}me`, user);

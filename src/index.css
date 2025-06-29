@@ -58,3 +58,23 @@ button {
 button, input, optgroup, select, textarea {
   font-family: 'Roboto', sans-serif !important;
 }
+.p-dropdown {
+  background-color: #444 !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.p-dropdown-panel {
+  background-color: #444 !important;
+  color: #fff !important;
+}
+
+.p-dropdown-item {
+  background-color: #444 !important;
+  color: #fff !important;
+}
+
+.p-dropdown-item:hover {
+  background-color: #555 !important;
+  color: #fff !important;
+}

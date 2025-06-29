@@ -2,14 +2,16 @@ import Sidebar from "../components/sidebar";
 import Toolbar from "../components/Toolbar";
 import { useEffect, useState } from "react";
 import Loader from "../components/Loader";
-import type { Users } from "../models/User";
+import type { Users} from "../models/User";
 import { Toast } from 'primereact/toast';
 import { useRef } from "react";
-
+import { Paginator } from 'primereact/paginator';
 import { getUsersWithLockers, putUserRole } from "../services/usersService";
 
 export default function Users() {
   const toast = useRef<Toast>(null);
+  const [filterRole, setFilterRole] = useState<string>("");
+  const [organizationId, setOrganizationId] = useState<string>("1");
 
   const [users, setUsers] = useState<Users[]>([]);
   const [selectedUser, setSelectedUser] = useState<Users | null>(null);
@@ -18,6 +20,10 @@ export default function Users() {
   const [selectedLocker, setSelectedLocker] = useState<number | null>(null);
   const [selectedCompartment, setSelectedCompartment] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [page, setPage] = useState(0); 
+  const [rows, setRows] = useState(10); 
+  const [totalRecords, setTotalRecords] = useState(0);
+
 
   const [mode, setMode] = useState<"edit" | "add">("edit");
   const [newEmail, setNewEmail] = useState<string>("");
@@ -30,14 +36,31 @@ export default function Users() {
 
   const compartments = [1, 2, 3, 4, 5];
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (
+    orgId = organizationId,
+    currentPage = page, 
+    currentRows = rows,
+    roleFilter = filterRole
+  ) => {
     setLoading(true);
     try {
-      const data = await getUsersWithLockers("1", 1, 10);
+      const data = await getUsersWithLockers(orgId, currentPage + 1, currentRows,roleFilter || undefined);
       console.log("Fetched users:", data);
-      setUsers(data);
+      setUsers(data.items);
+      setTotalRecords(data.total); 
+
     } catch (error) {
       console.error("Failed to fetch users:", error);
+      setUsers([]);
+      setTotalRecords(0);
+      setPage(0);
+
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Failed to fetch users",
+        life: 3000,
+      });
     } finally {
       setLoading(false);
     }
@@ -45,11 +68,11 @@ export default function Users() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page, rows, filterRole, organizationId]);
 
   const openModal = (user: Users) => {
     setSelectedUser(user);
-    setNewRole(user.role || "user");
+    setNewRole( "user");
     setSelectedLocker(null);
     setSelectedCompartment(null);
     setShowModal(true);
@@ -71,12 +94,23 @@ export default function Users() {
     setNewEmail("");
   };
 
+
+
+
+
+
+
+
   return (
     <div className="flex bg-[#2e2d2d] min-h-screen text-white">
       <Sidebar />
 
       <div className="flex-1 ml-16">
-        <Toolbar title="Users Management" />
+        <Toolbar title="Users Management" 
+        onChangeOrganization={(id) => {
+        setOrganizationId(id);
+        setPage(0); 
+      }}/>
         <Toast ref={toast} />
 
         <div className="p-6">
@@ -86,6 +120,23 @@ export default function Users() {
           </button>
 
           <div className="mt-6 bg-[#252525] rounded-xl p-6 overflow-x-auto">
+            <div className="mb-4">
+              <label className="block text-sm mb-1">Filter by Role</label>
+              <select
+                value={filterRole}
+                onChange={(e) => {
+                  setFilterRole(e.target.value);
+                  setPage(0); 
+                }}
+                className="bg-[#444] p-2 rounded text-white"
+              >
+                <option value="">All</option>
+                <option value="super_admin">Super Admin</option>
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
+              </select>
+            </div>
+
             <table className="w-full text-left table-auto">
               <thead>
                 <tr className="text-white border-b border-gray-600">
@@ -96,12 +147,27 @@ export default function Users() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user, i) => (
+                {users.length === 0 ? (
+                  <tr>
+                  <td colSpan={4} className="text-center py-4 text-gray-400">
+                  No users found.
+                  </td>
+                  </tr>
+                  ) : (
+
+                users.map((user, i) => (
                   <tr key={i} className="border-b border-white">
                     <td className="py-4">
                       <div>
                         <div>{user.name}</div>
-                        <div className="text-sm text-gray-400">{user.role}</div>
+                       <div className="text-xs text-gray-400 mt-1 space-y-1">
+                        {user.assigned_lockers.map((locker, idx) => (
+                          <div key={idx}>
+                            {locker.role} - {locker.serial_number} ({locker.area})
+                          </div>
+                        ))}
+                      </div>
+
                       </div>
                     </td>
                     <td>{user.last_name}</td>
@@ -115,12 +181,45 @@ export default function Users() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                ))
+              )}
+
+              
               </tbody>
             </table>
+            
+            <Paginator
+              first={page * rows}
+              rows={rows}
+              totalRecords={totalRecords}
+              rowsPerPageOptions={[5, 10, 50]}
+              onPageChange={(e) => {
+                setPage(e.page);
+                setRows(e.rows);
+              }}
+              className="bg-[#252525] text-white border-none"
+              template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
+            />
+
           </div>
         </div>
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
      {showModal && (
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -233,13 +332,28 @@ export default function Users() {
               
               fetchUsers();
             } catch (e) {
-              console.error("Failed to save", e);
-              toast.current?.show({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to save changes',
-                life: 3000
-              });
+              if (
+                typeof e === "object" &&
+                e !== null &&
+                "response" in e &&
+                (e as { response?: { status?: number } }).response?.status === 404
+              ) {
+                toast.current?.show({
+                  severity: "warn",
+                  summary: "Invitation Sent",
+                  detail: "User not found in the system, invitation email has been sent.",
+                  life: 4000,
+                });
+              } else {
+                toast.current?.show({
+                  severity: "error",
+                  summary: "Error",
+                  detail: "Failed to save changes",
+                  life: 3000,
+                });
+              }
+              closeModal();
+              fetchUsers();
             }
             finally
             {

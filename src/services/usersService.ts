@@ -1,5 +1,5 @@
 // services/usersService.ts
-import type { Users } from "../models/User";
+import type { UserListResponse } from "../models/User";
 import {getApi} from "./interceptor";
 const api = getApi("nest");
 
@@ -9,11 +9,12 @@ export const getUsersWithLockers = async (
   page = 1,
   limit = 10,
   role?: string
-): Promise<Users[]> => {
+): Promise<UserListResponse> => {
   const response = await api.get("/api/user-list/" + organizationId, {
     params: { page, limit, ...(role ? { role } : {}) },
   });
-  return response.data.data.items as Users[];
+  console.log(response)
+  return response.data.data as UserListResponse;
 };
 
 export const putUserRole = async (
