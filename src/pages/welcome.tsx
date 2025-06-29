@@ -18,15 +18,26 @@ export default function CreateOrganization() {
     });
    
   };
-   
+  const isElectron = () => window.navigator.userAgent.includes("Electron");
+   if (isElectron()) {
+    return (
+      <div className="h-screen w-full bg-[#2e2d2d] flex flex-col items-center justify-center text-white p-6 space-y-4">
+        <img src="/images/Locker Icon.svg" alt="Locker" className="h-16 w-16 animate-pulse" />
+        <h1 className="text-2xl font-bold">No locker assigned</h1>
+        <p className="text-center max-w-md text-gray-400">
+          You do not have a locker assigned. Please contact your administrator to assign you one.
+        </p>
+      </div>
+    );
+  }
+  
   return (
 <div className="h-screen w-full bg-[#2e2d2d] flex items-center justify-center relative">
-  {/* Logo a la izquierda */}
+
   <div className="absolute top-8 left-8">
     <img src="images/logo.svg" alt="Lockity" className="h-12" />
   </div>
 
-  {/* Centro del formulario */}
   <div className="bg-[#2e2d2d] rounded-lg shadow space-y-4 ">
     <h1 className="text-center text-2xl font-bold mb-2">Welcome!!!</h1>
     <p className="text-center text-sm mb-4">
