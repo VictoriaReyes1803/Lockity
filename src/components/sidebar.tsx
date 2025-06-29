@@ -8,10 +8,12 @@ import { useRef } from "react";
 import { Logout } from "../services/authService";
 
 import type { User } from "../models/User";
+const isElectron = () => window.navigator.userAgent.includes("Electron");
+
 const navItems = [
   
   { label: "Lockers", icon: "/images/Locker Icon.svg", route: "/lockers" },
-  { label: "Users", icon: "/images/users Icon.svg", route: "/users" },
+  { label: "Users", icon: "/images/users Icon.svg", route: "/users", webOnly: true },
   { label: "Organization", icon: "/images/Organization Icon.svg", route: "/organization" },
   { label: "Settings", icon: "/images/Tuerca.svg", route: "/settings" },
 ];
@@ -62,7 +64,9 @@ const Sidebar = () => {
     </div>
       
       <nav className="flex flex-col gap-4 w-full mt-4">
-        {navItems.map((item, i) => (
+        {navItems
+        .filter(item => !item.webOnly || !isElectron())
+        .map((item, i) => (
           <a
             key={i}
             href={item.route}

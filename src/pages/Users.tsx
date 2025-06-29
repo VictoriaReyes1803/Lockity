@@ -107,6 +107,7 @@ export default function Users() {
 
       <div className="flex-1 ml-16">
         <Toolbar title="Users Management" 
+        showOrganizationSelect={true}
         onChangeOrganization={(id) => {
         setOrganizationId(id);
         setPage(0); 
