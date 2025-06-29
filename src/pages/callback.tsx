@@ -65,9 +65,10 @@ console.log('Exchanging code for token with body:', body.toString());
       {loading ? (
         <Loader />
       ) : (
+        
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Authentication Complete</h1>
-          <p className="text-lg">You can now close this window.</p>
+
         </div>
       )}
     </div>

@@ -6,12 +6,25 @@ export interface User {
 }
 
 export interface Users {
- name: string;
+  name: string;
   last_name: string;
   second_last_name: string;
   email: string;
-  role: string;
+  assigned_lockers: {
+    serial_number: string;
+    role: string;
+    organization: string;
+    area: string;
+    locker_number_in_area: number;
+  }[];
 }
+export interface UserListResponse {
+  items: Users[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface Userlocker{
 email: string;
 role: string;
