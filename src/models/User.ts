@@ -4,6 +4,11 @@ export interface User {
   second_last_name: string;
   email: string;
 }
+export interface userlist{
+  message: string;
+  success: boolean;
+  data: User;
+}
 
 export interface Users {
   name: string;
@@ -23,6 +28,8 @@ export interface UserListResponse {
   total: number;
   page: number;
   limit: number;
+  message: string;
+  
 }
 
 export interface Userlocker{

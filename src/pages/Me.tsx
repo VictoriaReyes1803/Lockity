@@ -24,10 +24,31 @@ export default function UserInformation() {
       setLoading(true);
       try {
         const user = await Me();
-        console.log("User data fetched:", user);
-        setForm(user);
+        setForm(user.data);
       } catch (err) {
-        console.error("Failed to load user:", err);
+         let message = "Failed to fetch user data.";
+      if (
+        err &&
+        typeof err === "object" &&
+        "response" in err &&
+        err.response &&
+        typeof err.response === "object" &&
+        "data" in err.response &&
+        err.response.data &&
+        typeof err.response.data === "object" &&
+        "message" in err.response.data
+      ) {
+        message = (err.response.data as { message?: string }).message ?? message;
+      }
+
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: message,
+        life: 3000,
+      });
+
+      console.error("Failed to fetch user data:", err);
       } finally {
         setLoading(false);
       }
@@ -42,13 +63,29 @@ export default function UserInformation() {
 
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+  const nameRegex = /^[A-Za-záéíóúüñÁÉÍÓÚÜÑ ]{3,100}$/;
+
+  if (
+    !nameRegex.test(form.name.trim()) ||
+    !nameRegex.test(form.last_name.trim()) ||
+    !nameRegex.test(form.second_last_name.trim())
+  ) {
+    toast.current?.show({
+      severity: 'warn',
+      summary: 'Validation error',
+      detail: 'Name fields must be 3–100 letters, only letters and spaces are allowed.',
+      life: 3000,
+    });
+    return;
+  }
   try {
     const updated = await UpdateUser(form);
-    setForm(updated);
+
+    setForm(updated.data);
     toast.current?.show({
       severity: 'success',
-      summary: 'Update Successful',
-      detail: 'Your information has been updated successfully.',
+      summary: 'UpdateF Successful',
+      detail: updated.message || 'Your information has been updated successfully.',
       life: 3000
     });
    
@@ -58,7 +95,19 @@ export default function UserInformation() {
     toast.current?.show({
       severity: 'error',
       summary: 'Update Failed',
-      detail: 'There was an error updating your information.',
+      detail: (
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        err.response &&
+        typeof err.response === 'object' &&
+        'data' in err.response &&
+        err.response.data &&
+        typeof err.response.data === 'object' &&
+        'message' in err.response.data
+          ? (err.response.data as { message?: string }).message
+          : 'An error occurred while updating your information.'
+      ),
       life: 3000
     });
 

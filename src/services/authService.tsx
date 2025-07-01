@@ -1,13 +1,13 @@
-import type { User } from "../models/User";
+import type { User, userlist} from "../models/User";
 import {getApi} from "./interceptor";
 const api = getApi("laravel");
 const pre = 'api/users/';
 
-export const Me = async (): Promise<User> => {
+export const Me = async (): Promise<userlist> => {
   
 
   const response = await api.get(`${pre}me`);
-  return response.data.data as User;
+  return response.data ;
 
 };
 
@@ -16,9 +16,10 @@ export const haslocker = async (): Promise<boolean> => {
   return response.data.data as boolean;
 }
 
-export const UpdateUser = async (user: User): Promise<User> => {
+export const UpdateUser = async (user: User): Promise<userlist> => {
   const response = await api.put(`${pre}me`, user);
-  return response.data.data as User;
+  console.log("UpdateUser response:", response.data);
+  return response.data;
 };
 
 export const Logout = async (): Promise<void> => {

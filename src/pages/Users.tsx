@@ -5,9 +5,11 @@ import Loader from "../components/Loader";
 import type { Users} from "../models/User";
 import { Toast } from 'primereact/toast';
 import { useRef } from "react";
+
+import { getLockers , getCompartments} from "../services/lockersService";
 import { Paginator } from 'primereact/paginator';
 import { getUsersWithLockers, putUserRole } from "../services/usersService";
-
+import type { Locker, Compartment } from "../models/locker";
 export default function Users() {
   const toast = useRef<Toast>(null);
   const [filterRole, setFilterRole] = useState<string>("");
@@ -27,14 +29,9 @@ export default function Users() {
 
   const [mode, setMode] = useState<"edit" | "add">("edit");
   const [newEmail, setNewEmail] = useState<string>("");
+  const [availableLockers, setAvailableLockers] = useState<Locker[]>([]);
+  const [availableCompartments, setAvailableCompartments] = useState<Compartment[]>([]);
 
-  const lockers = [
-    { id: 1,serial_number: "AAAAAA" },
-    { id: 2, serial_number: "654321" },
-    { id: 3, serial_number: "654322" },
-  ];
-
-  const compartments = [1, 2, 3, 4, 5];
 
   const fetchUsers = async (
     orgId = organizationId,
@@ -45,7 +42,7 @@ export default function Users() {
     setLoading(true);
     try {
       const data = await getUsersWithLockers(orgId, currentPage + 1, currentRows,roleFilter || undefined);
-      console.log("Fetched users:", data);
+     
       setUsers(data.items);
       setTotalRecords(data.total); 
 
@@ -77,6 +74,7 @@ export default function Users() {
     setSelectedCompartment(null);
     setShowModal(true);
     setMode("edit");
+    fetchLockers(); 
   };
   const openAddModal = () => {
     setSelectedUser(null);
@@ -86,13 +84,79 @@ export default function Users() {
     setSelectedCompartment(null);
     setMode("add");
     setShowModal(true);
+    
   };
 
   const closeModal = () => {
     setShowModal(false);
     setSelectedUser(null);
     setNewEmail("");
+    setSelectedLocker(null);
+    setSelectedCompartment(null);
+    setAvailableCompartments([]);
+    setAvailableLockers([]);
   };
+
+
+  const fetchLockers = async () => {
+  try {
+    const data = await getLockers(1, 100, organizationId);
+
+    if(data.success === true) {
+   
+    setAvailableLockers(data.data.items);
+  }else {
+    toast.current?.show({
+      severity: "warn", 
+      summary: "Warning",
+      detail: data.message ?? "Could not load lockers",
+      life: 3000,
+    });
+    setAvailableLockers([]);
+  }
+
+  } catch (error) {
+    console.error("Error loading lockers:", error);
+    toast.current?.show({
+      severity: "error",
+      summary: "Error",
+      detail: "Failed to load lockers",
+      life: 3000,
+    });
+  }
+};
+const fetchCompartments = async (lockerId: number) => {
+  try {
+    const response = await getCompartments(lockerId);
+
+    if (response.sucess) {
+      
+      setAvailableCompartments(response.items);
+    } else {
+
+      toast.current?.show({
+        severity: "warn",
+        summary: "Warning",
+        detail: response.message ?? "Could not load compartments",
+        life: 3000,
+      });
+      setAvailableCompartments([]); 
+    }
+  } catch (error) {
+    
+    console.error("Error loading compartments:", error);
+    toast.current?.show({
+      severity: "error",
+      summary: "Error",
+      detail:
+        (typeof error === "object" && error !== null && "response" in error && typeof (error as { response?: { data?: { message?: string } } }).response?.data?.message === "string"
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+          : "Unexpected error while loading compartments"),
+      life: 3000,
+    });
+    setAvailableCompartments([]);
+  }
+};
 
 
 
@@ -258,15 +322,22 @@ export default function Users() {
         <label className="block text-sm mb-1">Locker</label>
         <select
           value={selectedLocker ?? ""}
-          onChange={(e) => setSelectedLocker(Number(e.target.value))}
+          onChange={(e) => {
+          const lockerId = Number(e.target.value);
+            setSelectedLocker(lockerId);
+            setSelectedCompartment(null);
+            fetchCompartments(lockerId); 
+          }}
+          
           className="w-full bg-[#444] p-2 border rounded mb-2"
         >
           <option value="">-- Select locker --</option>
-          {lockers.map((locker) => (
-            <option key={locker.id} value={locker.id}>
-              {locker.serial_number}
-            </option>
-          ))}
+          {availableLockers.map((locker) => (
+          <option key={locker.id} value={locker.id}>
+          Locker {locker.locker_number} - {locker.area_name} 
+          </option>
+        ))}
+
         </select>
       </div>
       <div className="mb-2">
@@ -277,12 +348,14 @@ export default function Users() {
           className="w-full bg-[#444] p-2 border rounded mb-2"
         >
           <option value="">-- Select compartment --</option>
-          {compartments.map((c) => (
-            <option key={c} value={c}>
-              Compartment {c}
+          {availableCompartments.map((compartment) => (
+            <option key={compartment.id} value={compartment.id}>
+              Compartment {compartment.id} 
             </option>
           ))}
         </select>
+
+
       </div>
       <div className="flex justify-end space-x-2 mt-4">
         <button
