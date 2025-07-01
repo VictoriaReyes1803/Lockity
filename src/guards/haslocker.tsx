@@ -16,6 +16,7 @@ export default function Haslocker({ children }: LockerGuardProps) {
     const checkLockers = async () => {
       try {
         const result = await haslocker();
+        console.log("Locker check result:", result);
         if (!result) {
           navigate("/welcome", { replace: true });
         }
