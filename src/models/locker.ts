@@ -13,23 +13,31 @@ export interface LockerListResponse {
    items: Locker[];
   total: number;
   page: number;
+  has_next_page: boolean;
+  has_previous_page: boolean;
   limit: number;
   }
   message: string;
   success: boolean;
+
 }
 export interface Compartment {
 id : number;
 status: string;
+compartment_number: number;
 users : User[];
 }
 export interface ListCompartmentsResponse {
-    items: Compartment[];
-    total: number;
-    page: number;
-    limit: number;
+    data: {
+        items: Compartment[];
+        total: number;
+        page: number;
+        limit: number;
+        has_next_page: boolean;
+        has_previous_page: boolean;
+    }
     message: string;
-    sucess: boolean;
+    success: boolean;
 
 }
 export interface organization {

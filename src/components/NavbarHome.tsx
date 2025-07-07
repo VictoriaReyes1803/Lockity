@@ -8,6 +8,7 @@ const handle = async () => {
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = await generateCodeChallenge(codeVerifier);
   const state = crypto.randomUUID();
+  sessionStorage.setItem('oauth_state', state);
 
   sessionStorage.setItem('pkce_code_verifier', codeVerifier);
   sessionStorage.setItem('oauth_state', state);

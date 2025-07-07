@@ -13,6 +13,7 @@ export default function UserInformation() {
   const toast = useRef<Toast>(null);
 
   const [form, setForm] = useState<User>({
+    id: 0, 
     name: "",
     last_name: "",
     second_last_name: "",
@@ -64,6 +65,7 @@ export default function UserInformation() {
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   const nameRegex = /^[A-Za-záéíóúüñÁÉÍÓÚÜÑ ]{3,100}$/;
+  const emailRegex = /^(?=.{5,100}$)[\p{L}0-9._-]+@[\p{L}0-9-]+(?:\.[\p{L}0-9-]+)*\.[\p{L}0-9]{2,}$/u;
 
   if (
     !nameRegex.test(form.name.trim()) ||
@@ -78,6 +80,18 @@ export default function UserInformation() {
     });
     return;
   }
+
+if (!emailRegex.test(form.email.trim())) {
+  toast.current?.show({
+    severity: 'warn',
+    summary: 'Validation error',
+    detail: 'Invalid email format. Must be between 5–100 characters.',
+    life: 3000,
+  });
+  return;
+}
+
+
   try {
     const updated = await UpdateUser(form);
 

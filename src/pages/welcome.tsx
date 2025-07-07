@@ -1,6 +1,10 @@
 import { useState, useRef } from "react";
 import { Toast } from "primereact/toast";
-import { postOrganization } from "../services/lockersService"; // ajusta tu ruta real
+import { postOrganization } from "../services/lockersService"; 
+import Loader from "../components/Loader";
+  import { useEffect } from "react";
+  import { haslocker } from "../services/authService";
+  import { useNavigate } from "react-router-dom";
 
 export default function CreateOrganization() {
   const [organization, setOrganization] = useState("");
@@ -9,6 +13,27 @@ export default function CreateOrganization() {
   const [areaDescription, setAreaDescription] = useState("");
   const [lockerCode, setLockerCode] = useState("");
   const toast = useRef<Toast>(null);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState<boolean>(false);
+
+useEffect(() => {
+  const checkLocker = async () => {
+    setLoading(true);
+    try {
+      const result = await haslocker();
+      console.log("checkLocker on welcome page:", result);
+      setLoading(false);
+      if (result) {
+        navigate("/me", { replace: true });
+      }
+    } catch (error) {
+      console.error("Error checking locker on welcome:", error);
+      
+    }
+  };
+  checkLocker();
+}, [navigate]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,6 +204,8 @@ export default function CreateOrganization() {
           </div>
         </form>
       </div>
+      {loading && <Loader />}
+
     </div>
   );
 }

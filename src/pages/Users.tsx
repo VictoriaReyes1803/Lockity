@@ -129,9 +129,9 @@ const fetchCompartments = async (lockerId: number) => {
   try {
     const response = await getCompartments(lockerId);
 
-    if (response.sucess) {
+    if (response.success) {
       
-      setAvailableCompartments(response.items);
+      setAvailableCompartments(response.data.items);
     } else {
 
       toast.current?.show({

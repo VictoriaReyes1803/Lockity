@@ -8,6 +8,7 @@ import Haslocker from './guards/haslocker';
 import CreateOrganization from './pages/welcome';
 import NotFound from './pages/notfound';
 import HomeDesktop from './pagesDesktop/home';
+import Lockers from './pages/Lockers';
 const isElectron = () => window.navigator.userAgent.includes("Electron");
 
 function App() {
@@ -16,15 +17,13 @@ function App() {
   
 
       <Routes>
-        <Route path="/" element={  isElectron() ? <HomeDesktop /> : <Home /> }/>
+      <Route path="/" element={  isElectron() ? <HomeDesktop /> : <Home /> }/>
 
        <Route path="/callback" element={<Callback />} />
+      <Route path="/lockers" element={ <Lockers /> } />
        <Route path="/welcome" element={<PrivateRoute> <CreateOrganization /></PrivateRoute>} />
       <Route  path="/me" element={<PrivateRoute> <Haslocker> <UserInformation /> </Haslocker> </PrivateRoute>} />
-      <Route path="/users" element={
-            <PrivateRoute>
-              <Haslocker>
-              <Users /></Haslocker></PrivateRoute>}/>
+      <Route path="/users" element={<PrivateRoute> <Haslocker> <Users /></Haslocker></PrivateRoute>}/>
        <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

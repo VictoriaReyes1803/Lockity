@@ -1,13 +1,13 @@
 // components/Sidebar.tsx
 import {useState ,useEffect } from "react";
 import Loader from "../components/Loader";
-import {Me} from "../services/authService"
 import { Toast } from 'primereact/toast';
 import { useRef } from "react";
-
 import { Logout } from "../services/authService";
-
 import type { User } from "../models/User";
+import { useNavigate } from "react-router-dom";
+
+
 const isElectron = () => window.navigator.userAgent.includes("Electron");
 
 const navItems = [
@@ -15,21 +15,20 @@ const navItems = [
   { label: "Lockers", icon: "/images/Locker Icon.svg", route: "/lockers" },
   { label: "Users", icon: "/images/users Icon.svg", route: "/users", webOnly: true },
   { label: "Organization", icon: "/images/Organization Icon.svg", route: "/organization" },
-  { label: "Settings", icon: "/images/Tuerca.svg", route: "/settings" },
+  { label: "Logs", icon: "/images/Tuerca.svg", route: "/settings" },
 ];
 
 const Sidebar = () => {
   const [loading, setLoading] = useState<boolean>(false);
    const [user, setUser] = useState<User | null>(null);
   const toast = useRef<Toast>(null);
-
+const navigate = useNavigate();
     useEffect(() => {
       const fetchData = async () => {
         setLoading(true);
         try {
-            const fetchedUser = await Me();
-            sessionStorage.setItem("user", JSON.stringify(fetchedUser));
-            setUser(fetchedUser);
+            const fetchedUser = sessionStorage.getItem("user");
+            setUser(fetchedUser ? JSON.parse(fetchedUser) as User : null);
   
         } catch (err) {
           console.error("Failed to load user:", err);
@@ -86,14 +85,16 @@ const Sidebar = () => {
         onClick={async () => {
           try {
             await Logout();
-            sessionStorage.clear();
+            
             toast.current?.show({
               severity: 'success',
               summary: 'Logout Successful',
               detail: 'You have been logged out successfully.',
               life: 3000
             });
-            window.location.href = "/";  
+            sessionStorage.clear();
+            navigate("/");
+
           } catch (err) {
             console.error("Error during logout:", err);
           }

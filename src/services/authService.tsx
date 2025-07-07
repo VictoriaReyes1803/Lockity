@@ -26,6 +26,7 @@ export const Logout = async (): Promise<void> => {
 
   const response = await api.post(`${pre}auth/logout`);
   localStorage.removeItem("access_token");
+  sessionStorage.clear();
   console.log("Logout response:", response.data);
 
 }

@@ -24,11 +24,13 @@ const Toolbar  = ({ title, onChangeOrganization
   const fetchData = async () => {
     try {
       const fetchedUser = await Me();
-      sessionStorage.setItem("user", JSON.stringify(fetchedUser));
+     
+      sessionStorage.setItem("user", JSON.stringify(fetchedUser.data));
       setUser(fetchedUser.data);
+      if (showOrganizationSelect)
+      {
+        const orgResponse = await getOrganization();
       
-      const orgResponse = await getOrganization();
-      console.log("Organizations response:", orgResponse.data.items);
       if(orgResponse.success )
       {
       setOrganizations(orgResponse.data.items);
@@ -41,6 +43,8 @@ const Toolbar  = ({ title, onChangeOrganization
           life: 3000,
         });
       }
+      }
+      
     } catch (err) {
       console.error("Failed to load data:", err);
     }

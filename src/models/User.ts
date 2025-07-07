@@ -1,8 +1,10 @@
 export interface User {
+  id: number;
   name: string;
   last_name: string;
   second_last_name: string;
   email: string;
+  role?: string;
 }
 export interface userlist{
   message: string;

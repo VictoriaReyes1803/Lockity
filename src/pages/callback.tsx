@@ -12,6 +12,8 @@ const Callback = () => {
       const storedState = sessionStorage.getItem('oauth_state');
       const codeVerifier = sessionStorage.getItem('pkce_code_verifier');
 
+      console.log('state in URL:', state);
+      console.log('storedState:', storedState);
       if (state !== storedState) {
         alert('CSRF detected: state mismatch.');
         setLoading(false);
