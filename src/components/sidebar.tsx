@@ -92,7 +92,7 @@ const navigate = useNavigate();
               detail: 'You have been logged out successfully.',
               life: 3000
             });
-            sessionStorage.clear();
+            
             navigate("/");
 
           } catch (err) {

@@ -1,3 +1,4 @@
+import Cookies from "js-cookie";
 import type { User, userlist} from "../models/User";
 import {getApi} from "./interceptor";
 const api = getApi("laravel");
@@ -22,11 +23,25 @@ export const UpdateUser = async (user: User): Promise<userlist> => {
   return response.data;
 };
 
-export const Logout = async (): Promise<void> => {
+export const Logout = async (): Promise<{ apiResponse: any; webLogoutResponse: any }> => {
+  try {
+    const apiResponse = await api.post(`${pre}auth/logout`);
+    console.log("Logout response:", apiResponse.data);
 
-  const response = await api.post(`${pre}auth/logout`);
-  localStorage.removeItem("access_token");
-  sessionStorage.clear();
-  console.log("Logout response:", response.data);
+    localStorage.removeItem("access_token");
+    sessionStorage.clear();
 
-}
+    const webLogoutResponseRaw = await fetch(`${import.meta.env.VITE_BACKEND_URL}web-logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    const webLogoutResponse = await webLogoutResponseRaw.json();
+    console.log("Web logout response:", webLogoutResponse);
+    console.log("api response ",apiResponse.data);
+    return { apiResponse: apiResponse.data, webLogoutResponse };
+    // return apiResponse.data;
+  } catch (error) {
+    console.error("Logout error:", error);
+    throw error;
+  }
+};

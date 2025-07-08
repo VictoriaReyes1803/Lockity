@@ -10,16 +10,31 @@ import { getCompartments } from "../services/lockersService";
 import { getLockers } from "../services/lockersService"; 
 export default function Lockers() {
   const toast = useRef<Toast>(null);
-    const [organizationId, setOrganizationId] = useState<string>("1");
+    const [organizationId, setOrganizationId] = useState<string>("10");
     const [page, setPage] = useState(0); 
     const [lockers, setLockers] = useState<Locker[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [compartments, setCompartments] = useState<Compartment[]>([]);
     const [selectedLocker, setSelectedLocker] = useState<Locker | null>(null);
 
+  useEffect(() => {
+  const orgsRaw = sessionStorage.getItem("organizations");
+  console.log("Organizations from sessionStorage:", orgsRaw);
+  if (orgsRaw) {
+    try {
+      const orgs = JSON.parse(orgsRaw);
+      if (Array.isArray(orgs) && orgs.length > 0) {
+        setOrganizationId(orgs[0].id.toString()); 
+      }
+    } catch (err) {
+      console.error("Failed to parse organizations from sessionStorage", err);
+    }
+  }
+}, []);
 
 
     useEffect(() => {
+      if (!organizationId) return;
     const fetchLockers = async () => {
       try {
         setLoading(true);
@@ -136,8 +151,37 @@ export default function Lockers() {
                         key={compartment.id}
                         className="flex justify-between items-center border-b border-gray-500 py-1"
                     >
-                        <span>Compartment {compartment.compartment_number}</span>
-                        <span className="text-sm text-gray-300">Status: {compartment.status}</span>
+                        <div>
+                            <div className="font-semibold">
+                            Drawer {compartment.compartment_number}
+                            </div>
+                            <div className="text-xs text-gray-400 ml-4">
+                              {compartment.users && compartment.users.length > 0
+                                ? compartment.users.map((user, idx) => (
+                                    <span key={user.id}>
+                                      {user.name}
+                                      {idx < compartment.users.length - 1 && ", "}
+                                    </span>
+                                  ))
+                                : "Unknown"}
+                            </div>
+                            </div>
+                        <span
+                        className={`
+                            text-xs font-bold px-3 py-1 rounded-full
+                            ${
+                            compartment.status.toLowerCase() === "open"
+                                ? "bg-[#41b883] text-white"
+                                : "bg-gray-500 text-white"
+                            }
+                        `}
+                        >
+                        {compartment.status.toUpperCase()}
+                        </span>
+
+                         {/* <button className="bg-[#FFD166] text-black px-4 py-1 rounded-full font-semibold hover:brightness-90 transition mt-2">
+                        Update
+                        </button> */}
                     </div>
                     ))}
                 </>

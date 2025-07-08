@@ -34,6 +34,7 @@ const Toolbar  = ({ title, onChangeOrganization
       if(orgResponse.success )
       {
       setOrganizations(orgResponse.data.items);
+      sessionStorage.setItem("organizations", JSON.stringify(orgResponse.data.items));
       }
       else {
         toast.current?.show({
@@ -57,13 +58,9 @@ const Toolbar  = ({ title, onChangeOrganization
     <header className="w-full h-[60px] bg-gradient-to-t from-[#737373] to-[#2e2e2e] rounded-xl flex items-center justify-between px-6 text-white shadow-lg">
 
       <div className="flex items-center space-x-3">
-        <img
-          src="/images/User Icon.svg"
-          alt="user"
-          className="w-8 h-8 rounded-full border border-gray-200"
-        />
+        
         <span className="text-sm font-medium">
-          Hello {user?.name ?? ""}
+          Hello {user?.name ?? ""}!!
         </span>
       </div>
 

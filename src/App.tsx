@@ -20,7 +20,7 @@ function App() {
       <Route path="/" element={  isElectron() ? <HomeDesktop /> : <Home /> }/>
 
        <Route path="/callback" element={<Callback />} />
-      <Route path="/lockers" element={ <Lockers /> } />
+      <Route path="/lockers" element={ <Lockers/>  } />
        <Route path="/welcome" element={<PrivateRoute> <CreateOrganization /></PrivateRoute>} />
       <Route  path="/me" element={<PrivateRoute> <Haslocker> <UserInformation /> </Haslocker> </PrivateRoute>} />
       <Route path="/users" element={<PrivateRoute> <Haslocker> <Users /></Haslocker></PrivateRoute>}/>

@@ -20,9 +20,10 @@ export default function Haslocker({ children }: LockerGuardProps) {
         if (!result) {
           navigate("/welcome", { replace: true });
         }
+
       } catch (err) {
         console.error("Locker check failed:", err);
-        navigate("/welcome", { replace: true });
+        
       } finally {
         setChecking(false);
       }

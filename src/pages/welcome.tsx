@@ -24,11 +24,11 @@ useEffect(() => {
       console.log("checkLocker on welcome page:", result);
       setLoading(false);
       if (result) {
-        navigate("/me", { replace: true });
+        navigate("/lockers", { replace: true });
       }
     } catch (error) {
       console.error("Error checking locker on welcome:", error);
-      
+     setLoading(false); 
     }
   };
   checkLocker();
@@ -37,8 +37,15 @@ useEffect(() => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setLoading(true);
     try {
+      console.log("Submitting organization:", {
+        organization,
+        orgDescription,
+        areaName, 
+        areaDescription,
+        lockerCode,
+      });
       await postOrganization({
         name: organization,
         description: orgDescription,
@@ -48,7 +55,7 @@ useEffect(() => {
         },
         locker_serial_number: lockerCode,
       });
-
+      setLoading(false);
       toast.current?.show({
         severity: "success",
         summary: "Success",
@@ -64,7 +71,7 @@ useEffect(() => {
       setLockerCode("");
 
       
-      window.location.href = "/me"; 
+      window.location.href = "/lockers"; 
     } catch (error) {
       console.error("Error creating organization:", error);
 
@@ -83,7 +90,7 @@ useEffect(() => {
       ) {
         errorMessage = error.response.data.message;
       }
-
+      setLoading(false);
       toast.current?.show({
         severity: "error",
         summary: "Error",

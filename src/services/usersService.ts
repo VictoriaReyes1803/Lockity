@@ -11,7 +11,7 @@ export const getUsersWithLockers = async (
   role?: string
 ): Promise<UserListResponse> => {
   try {
-    const response = await api.get("/api/user-list/" + organizationId, {
+    const response = await api.get("/api/lockers/user-list/" + organizationId, {
       params: { page, limit, ...(role ? { role } : {}) },
     });
     console.log("Real response:", response.data);

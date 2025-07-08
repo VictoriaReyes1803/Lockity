@@ -13,7 +13,7 @@ import type { Locker, Compartment } from "../models/locker";
 export default function Users() {
   const toast = useRef<Toast>(null);
   const [filterRole, setFilterRole] = useState<string>("");
-  const [organizationId, setOrganizationId] = useState<string>("1");
+  const [organizationId, setOrganizationId] = useState<string>("");
 
   const [users, setUsers] = useState<Users[]>([]);
   const [selectedUser, setSelectedUser] = useState<Users | null>(null);
@@ -31,6 +31,21 @@ export default function Users() {
   const [newEmail, setNewEmail] = useState<string>("");
   const [availableLockers, setAvailableLockers] = useState<Locker[]>([]);
   const [availableCompartments, setAvailableCompartments] = useState<Compartment[]>([]);
+
+useEffect(() => {
+  const orgsRaw = sessionStorage.getItem("organizations");
+  console.log("Organizations from sessionStorage:", orgsRaw);
+  if (orgsRaw) {
+    try {
+      const orgs = JSON.parse(orgsRaw);
+      if (Array.isArray(orgs) && orgs.length > 0) {
+        setOrganizationId(orgs[0].id.toString()); 
+      }
+    } catch (err) {
+      console.error("Failed to parse organizations from sessionStorage", err);
+    }
+  }
+}, []);
 
 
   const fetchUsers = async (
@@ -64,6 +79,8 @@ export default function Users() {
   };
 
   useEffect(() => {
+     if (!organizationId) return;
+
     fetchUsers();
   }, [page, rows, filterRole, organizationId]);
 
