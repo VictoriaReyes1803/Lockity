@@ -8,6 +8,7 @@ interface LockerGuardProps {
 }
 
 export default function Haslocker({ children }: LockerGuardProps) {
+
   const [checking, setChecking] = useState(true);
   
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function Haslocker({ children }: LockerGuardProps) {
         console.log("Locker check result:", result);
         if (!result) {
           navigate("/welcome", { replace: true });
+          return;
         }
 
       } catch (err) {

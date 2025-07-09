@@ -9,10 +9,10 @@ const handle = async () => {
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = await generateCodeChallenge(codeVerifier);
   const state = crypto.randomUUID();
-  sessionStorage.setItem('oauth_state', state);
+  localStorage.setItem('oauth_state', state);
 
-  sessionStorage.setItem('pkce_code_verifier', codeVerifier);
-  sessionStorage.setItem('oauth_state', state);
+  localStorage.setItem('pkce_code_verifier', codeVerifier);
+  localStorage.setItem('oauth_state', state);
 
   const clientId = import.meta.env.VITE_CLIENT_ID;
   const redirectUri = import.meta.env.VITE_REDIRECT_URI;

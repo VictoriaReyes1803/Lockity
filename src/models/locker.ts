@@ -4,6 +4,7 @@ export interface Locker {
   organization_id: number;
     area_id: number;
     locker_number: number;
+    locker_serial_number: string;
     organization_name: string;
     area_name: string;
 }

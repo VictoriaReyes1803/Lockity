@@ -78,3 +78,9 @@ button, input, optgroup, select, textarea {
   background-color: #555 !important;
   color: #fff !important;
 }
+
+
+.p-dialog-footer {
+  background-color: #2e2d2d !important;
+  color: white;
+}

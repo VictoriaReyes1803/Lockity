@@ -9,8 +9,8 @@ const Callback = () => {
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
       const state = params.get('state');
-      const storedState = sessionStorage.getItem('oauth_state');
-      const codeVerifier = sessionStorage.getItem('pkce_code_verifier');
+      const storedState = localStorage.getItem('oauth_state');
+      const codeVerifier = localStorage.getItem('pkce_code_verifier');
 
       console.log('state in URL:', state);
       console.log('storedState:', storedState);
@@ -48,6 +48,8 @@ console.log('Exchanging code for token with body:', body.toString());
         if (data.access_token) {
           localStorage.setItem('access_token', data.access_token);
           console.log('Token received:', data.access_token);
+          localStorage.removeItem('oauth_state');
+
           window.location.href = '/me'; 
         } else {
           setLoading(false);

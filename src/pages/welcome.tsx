@@ -1,5 +1,7 @@
 import { useState, useRef } from "react";
 import { Toast } from "primereact/toast";
+import { Dialog } from "primereact/dialog";
+import { Button } from "primereact/button";
 import { postOrganization } from "../services/lockersService"; 
 import Loader from "../components/Loader";
   import { useEffect } from "react";
@@ -15,6 +17,7 @@ export default function CreateOrganization() {
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(false);
+  const [showWifiModal, setShowWifiModal] = useState(false);
 
 useEffect(() => {
   const checkLocker = async () => {
@@ -70,8 +73,8 @@ useEffect(() => {
       setAreaDescription("");
       setLockerCode("");
 
+      setShowWifiModal(true);
       
-      window.location.href = "/lockers"; 
     } catch (error) {
       console.error("Error creating organization:", error);
 
@@ -112,7 +115,7 @@ useEffect(() => {
         />
         <h1 className="text-2xl font-bold">No locker assigned</h1>
         <p className="text-center max-w-md text-gray-400">
-          You do not have a locker assigned. Please contact your administrator
+          You do not have a locker assigned. Please contact your Super administrator
           to assign you one.
         </p>
       </div>
@@ -210,6 +213,32 @@ useEffect(() => {
             </button>
           </div>
         </form>
+        <Dialog
+          header="Wi-Fi Configuration Reminder"
+          visible={showWifiModal}
+          style={{ width: '30vw', background: '#2e2d2d' }}
+          contentStyle={{ background: '#2e2d2d', color: 'white' }}
+          headerStyle={{ background: '#2e2d2d', color: 'white' }}
+          onHide={() => setShowWifiModal(false)}
+          footer={
+            <Button
+              label="Understood"
+              icon="pi pi-check"
+              onClick={() => {
+          setShowWifiModal(false);
+          navigate("/lockers");
+              }}
+              autoFocus
+            />
+            
+          }
+        >
+          <p className="m-0">
+            Before you can use your locker, please configure its Wi-Fi connection.<br />
+            Connect to the lockity_config Wi-Fi network, access its admin panel, and set up its internet connection.
+          </p>
+        </Dialog>
+
       </div>
       {loading && <Loader />}
 

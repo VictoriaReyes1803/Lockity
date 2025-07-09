@@ -1,4 +1,4 @@
-import Cookies from "js-cookie";
+
 import type { User, userlist} from "../models/User";
 import {getApi} from "./interceptor";
 const api = getApi("laravel");
@@ -14,7 +14,7 @@ export const Me = async (): Promise<userlist> => {
 
 export const haslocker = async (): Promise<boolean> => {
   const response = await api.get(`${pre}has-lockers`);
-  return response.data.data as boolean;
+  return response.data.data.has_lockers as boolean;
 }
 
 export const UpdateUser = async (user: User): Promise<userlist> => {
@@ -28,7 +28,7 @@ export const Logout = async (): Promise<{ apiResponse: any; webLogoutResponse: a
     const apiResponse = await api.post(`${pre}auth/logout`);
     console.log("Logout response:", apiResponse.data);
 
-    localStorage.removeItem("access_token");
+    localStorage.clear();
     sessionStorage.clear();
 
     const webLogoutResponseRaw = await fetch(`${import.meta.env.VITE_BACKEND_URL}web-logout`, {
