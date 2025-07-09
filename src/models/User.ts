@@ -13,6 +13,7 @@ export interface userlist{
 }
 
 export interface Users {
+  id: number;
   name: string;
   last_name: string;
   second_last_name: string;

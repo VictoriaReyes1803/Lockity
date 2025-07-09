@@ -18,6 +18,7 @@ export default function Lockers() {
     const [selectedLocker, setSelectedLocker] = useState<Locker | null>(null);
     const [updateAreas, setUpdateAreas] = useState<{ id: number; name: string; description: string }[]>([]);
     const [addSchedule, setAddSchedule] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
 
     const [addLockerModal, setAddLockerModal] = useState(false);
     const [areas, setAreas] = useState<{ id: number; name: string; description: string }[]>([]);
@@ -36,7 +37,7 @@ export default function Lockers() {
 
   useEffect(() => {
   const orgsRaw = sessionStorage.getItem("organizations");
-  console.log("Organizations from sessionStorage:", orgsRaw);
+
   if (orgsRaw) {
     try {
       const orgs = JSON.parse(orgsRaw);
@@ -44,16 +45,11 @@ export default function Lockers() {
         setOrganizationId(orgs[0].id.toString()); 
       }
     } catch (err) {
-      console.error("Failed to parse organizations from sessionStorage", err);
+      console.error(err);
     }
   }
 }, []);
-
-
-
-    useEffect(() => {
-      if (!organizationId) return;
-    const fetchLockers = async () => {
+ const fetchLockers = async () => {
       try {
         setLoading(true);
         const data = await getLockers(page + 1, 10, organizationId);
@@ -71,6 +67,12 @@ export default function Lockers() {
       }
     };
 
+
+
+    useEffect(() => {
+      if (!organizationId) return;
+      fetchLockers();
+   
     fetchLockers();
   }, [organizationId, page]);
 
@@ -119,6 +121,31 @@ export default function Lockers() {
                 src="/images/Plus.svg"
                 alt="Add Locker"
                 className="w-7 h-7 cursor-pointer"
+                onClick={() => {
+      
+                setIsEditMode(false);
+                setSelectedLockerToUpdate(null);
+                setSerialNumber("");
+                setSelectedAreaId(null);
+                setAddSchedule(false);
+                setStartTime("");
+                setEndTime("");
+                setScheduleDate("");
+                setRepeatSchedule(false);
+
+                const orgId = sessionStorage.getItem("selected_organization_id");
+                const orgsRaw = sessionStorage.getItem("organizations");
+
+                if (orgId && orgsRaw) {
+                const orgs = JSON.parse(orgsRaw);
+                const currentOrg = orgs.find((o: any) => o.id.toString() === orgId);
+                if (currentOrg?.areas) {
+                  setUpdateAreas(currentOrg.areas);
+                }
+                }
+
+                setShowModal(true);
+                }}
               />
             </div>
           </div>
@@ -157,6 +184,7 @@ export default function Lockers() {
                                 setUpdateAreas(currentOrg.areas);
                               }
                             }
+                            setIsEditMode(true);
                             setShowModal(true);
                           }}>
                             Update
@@ -232,10 +260,10 @@ export default function Lockers() {
 
 
 
-        {showModal && selectedLockerToUpdate && (
+        {showModal &&  (
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div className="bg-[#252525] rounded-xl p-6 text-white w-[400px]">
-      <h2 className="text-xl font-semibold mb-4">Update Locker</h2>
+      <h2 className="text-xl font-semibold mb-4">{isEditMode ? "Update Locker" : "Add Locker"}</h2>
 
       <div className="mb-2">
         <label className="block text-sm mb-1">Serial Number</label>
@@ -244,6 +272,8 @@ export default function Lockers() {
           value={serialNumber}
           onChange={(e) => setSerialNumber(e.target.value)}
           className="w-full bg-[#444] p-2 border rounded mb-2"
+          readOnly={isEditMode}
+          disabled={isEditMode}
         />
       </div>
 
@@ -345,26 +375,46 @@ export default function Lockers() {
           className="px-4 py-2 text-[black] bg-[#FFD166] rounded"
           onClick={async () => {
             try {
-              if (!selectedLockerToUpdate) return;
-              await putlocker({
-                organization_id: Number(selectedLockerToUpdate.organization_id),
-                area_id: Number(selectedLockerToUpdate.area_id),
+             if (isEditMode && !selectedLockerToUpdate) return;
+
+             const payload = {
+                organization_id: isEditMode
+                ? Number(selectedLockerToUpdate!.organization_id) 
+                : Number(organizationId),
+                area_id: Number(selectedAreaId), 
                 serial_number: serialNumber,
-                new_schendule: {
-                  day_of_week: dayOfWeek,
-                  start_time: startTime,
-                  end_time: endTime,
-                  repeat_schedule: repeatSchedule,
-                  schendule_date: scheduleDate,
-                },
-              });
+                ...(addSchedule && {
+                new_schendule:[ {
+                day_of_week: dayOfWeek,
+                start_time: startTime,
+                end_time: endTime,
+                repeat_schedule: repeatSchedule,
+                schendule_date: scheduleDate,
+                },],
+                }),
+                };
+
+              const response = await putlocker(payload);
+              console.log("Locker updated:", response);
+              fetchLockers();
+
+            
               toast.current?.show({
                 severity: "success",
                 summary: "Locker Updated",
                 detail: `Locker updated successfully`,
                 life: 3000,
               });
+
               setShowModal(false);
+              setSerialNumber("");
+              setSelectedAreaId(null);
+              setAddSchedule(false);
+              setStartTime("");
+              setEndTime("");
+              setScheduleDate("");
+              setRepeatSchedule(false);
+
             } catch (e) {
               console.error("Error updating locker:", e);
               toast.current?.show({
@@ -376,7 +426,7 @@ export default function Lockers() {
             }
           }}
         >
-          Save
+          {isEditMode ? "Save" : "Add"}
         </button>
       </div>
     </div>

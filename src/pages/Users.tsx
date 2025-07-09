@@ -2,7 +2,7 @@ import Sidebar from "../components/sidebar";
 import Toolbar from "../components/Toolbar";
 import { useEffect, useState } from "react";
 import Loader from "../components/Loader";
-import type { Users} from "../models/User";
+import type { Users, User} from "../models/User";
 import { Toast } from 'primereact/toast';
 import { useRef } from "react";
 
@@ -34,7 +34,7 @@ export default function Users() {
 
 useEffect(() => {
   const orgsRaw = sessionStorage.getItem("organizations");
-  console.log("Organizations from sessionStorage:", orgsRaw);
+  
   if (orgsRaw) {
     try {
       const orgs = JSON.parse(orgsRaw);
@@ -42,7 +42,7 @@ useEffect(() => {
         setOrganizationId(orgs[0].id.toString()); 
       }
     } catch (err) {
-      console.error("Failed to parse organizations from sessionStorage", err);
+      console.error( err);
     }
   }
 }, []);
@@ -57,9 +57,14 @@ useEffect(() => {
     setLoading(true);
     try {
       const data = await getUsersWithLockers(orgId, currentPage + 1, currentRows,roleFilter || undefined);
-     
-      setUsers(data.items);
-      setTotalRecords(data.total); 
+      const currentUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+
+      const filteredUsers = data.items.filter(
+      (user) => user.id !== currentUser.id && user.email !== currentUser.email
+    );
+
+    setUsers(filteredUsers);
+    setTotalRecords(filteredUsers.length); 
 
     } catch (error) {
       console.error("Failed to fetch users:", error);
@@ -95,6 +100,7 @@ useEffect(() => {
   };
   const openAddModal = () => {
     setSelectedUser(null);
+    fetchLockers(); 
     setNewRole("user");
     setNewEmail("");
     setSelectedLocker(null);
@@ -118,7 +124,7 @@ useEffect(() => {
   const fetchLockers = async () => {
   try {
     const data = await getLockers(1, 100, organizationId);
-
+    console.log("Lockers data:", data);
     if(data.success === true) {
    
     setAvailableLockers(data.data.items);
@@ -145,7 +151,7 @@ useEffect(() => {
 const fetchCompartments = async (lockerId: number) => {
   try {
     const response = await getCompartments(lockerId);
-
+    console.log("Compartments data:", response);
     if (response.success) {
       
       setAvailableCompartments(response.data.items);
@@ -351,7 +357,7 @@ const fetchCompartments = async (lockerId: number) => {
           <option value="">-- Select locker --</option>
           {availableLockers.map((locker) => (
           <option key={locker.id} value={locker.id}>
-          Locker {locker.locker_number} - {locker.area_name} 
+          Locker {locker.locker_serial_number} - {locker.area_name} 
           </option>
         ))}
 
@@ -400,6 +406,7 @@ const fetchCompartments = async (lockerId: number) => {
                   user_email: selectedUser.email,
                   role: newRole,
                 });
+                
                 toast.current?.show({
                   severity: 'success',
                   summary: 'Role Updated',
@@ -423,6 +430,7 @@ const fetchCompartments = async (lockerId: number) => {
               
               fetchUsers();
             } catch (e) {
+              console.error("Error saving changes:", e);
               if (
                 typeof e === "object" &&
                 e !== null &&

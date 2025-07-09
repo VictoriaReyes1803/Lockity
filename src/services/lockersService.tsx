@@ -59,14 +59,18 @@ export const getOrganization = async (): Promise<OrganizationResponse> => {
    organization_id: number;
    area_id: number;
    serial_number: string;
-   new_schendule:{
+   new_schendule?:
+   {
     day_of_week: number;
     start_time: string;
     end_time: string;
     repeat_schedule: boolean;
     schendule_date: string;
-   } 
+   }[];
+
     }
   ): Promise<void> => {
-    await api.put(`${pre}lockers`, payload);
+    const response = await api.put(`${pre}lockers`, payload);
+    console.log(payload)
+    return response.data;
   }
