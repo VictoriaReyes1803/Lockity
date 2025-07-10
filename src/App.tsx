@@ -3,7 +3,7 @@ import Home from './pages/Home';
 import Callback from './pages/callback';
 import UserInformation from './pages/Me';
 import Sidebar from "./components/sidebar";
-import Toolbar from "./components/Toolbar";
+import OrganizationsPage from './pages/Organizations';
 import Users from './pages/Users';
 import PrivateRoute from "./guards/authguard";
 import Haslocker from './guards/haslocker';
@@ -23,7 +23,19 @@ function App() {
 
        <Route path="/callback" element={<Callback />} />
        <Route path="/welcome" element={<PrivateRoute> <CreateOrganization /></PrivateRoute>} />
-
+    <Route
+      path="/organization"
+      element={
+        <PrivateRoute>
+          <Haslocker>
+            <div>
+              <Sidebar />
+              <OrganizationsPage />
+            </div>
+          </Haslocker>
+        </PrivateRoute>
+      }
+    />
     <Route
       path="/lockers"
       element={

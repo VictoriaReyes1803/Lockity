@@ -8,15 +8,18 @@ const pre = 'api/';
 export const getLockers = async (
   page: number,
   limit: number,
-  organization_id: string
+  organization_id: string,
+  showSchedules?: boolean
 ): Promise<LockerListResponse> => {
-    const response = await api.get(`${pre}lockers`, {
-      params: {
-        page,
-        limit,
-        organization_id,
-      },
-    });
+    const params: any = {
+      page,
+      limit,
+      organization_id,
+    };
+    if (showSchedules) {
+      params.showSchedules = true;
+    }
+    const response = await api.get(`${pre}lockers`, { params });
     console.log("Locker response:", response.data);
     return response.data;
 };
@@ -72,5 +75,17 @@ export const getOrganization = async (): Promise<OrganizationResponse> => {
   ): Promise<void> => {
     const response = await api.put(`${pre}lockers`, payload);
     console.log(payload)
+    return response.data;
+  }
+
+  export const deleteRole = async (
+    lockerId: number,
+    compartmentNumber: number,
+    userId: number
+  ): Promise<void> => {
+    const response = await api.delete(
+      `${pre}lockers/${lockerId}/${compartmentNumber}/users/${userId}`
+    );
+    console.log("Delete role response:", response.data);
     return response.data;
   }

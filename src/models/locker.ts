@@ -1,12 +1,21 @@
 import type {User} from "./User";
+export interface Schedule {
+day_of_week: string;
+start_time: string;
+end_time: string;
+repeat_schedule: boolean;
+schendule_date: string;
+
+}
 export interface Locker {
-  id: number;
+  locker_id: number;
   organization_id: number;
     area_id: number;
     locker_number: number;
     locker_serial_number: string;
     organization_name: string;
     area_name: string;
+    schedules?: Schedule[];
 }
 export interface LockerListResponse {
   data:

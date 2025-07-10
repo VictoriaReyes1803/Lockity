@@ -20,13 +20,13 @@ export const getUsersWithLockers = async (
 
 export const putUserRole = async (
  lockerId: string | number,
-  compartmentNumber: string | number,
+  compartmentNumber:  number,
   payload: {
     user_email: string;
     role: string;
   }
 ): Promise<void> => {
-  console.log(payload)
+  console.log('cuerpo del put',payload)
   await api.put(
     `/api/lockers/${lockerId}/${compartmentNumber}/users`,
     payload

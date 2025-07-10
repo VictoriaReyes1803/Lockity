@@ -137,13 +137,13 @@ if (!emailRegex.test(form.email.trim())) {
     <div className="flex min-h-screen bg-[#background-color: #2E2E2E;] text-white">
       
       <Sidebar />
-       <div className="flex-1 ml-[4.3rem]">
+       <div className="flex-1 ml-[4rem]">
         <Toolbar title="Me" /><Toast ref={toast} />
 
-
+      <div className="flex">
         <form
           onSubmit={handleSubmit}
-          className="max-w-xl mx-auto bg-[#2e2d2d] p-8 rounded-md space-y-4"
+          className="max-w-xl w-full mx-auto bg-[#2e2d2d] p-8 rounded-md space-y-4"
         >
           <h2 className="text-center text-lg font-medium mb-6">Your User Information</h2>
 
@@ -198,6 +198,33 @@ if (!emailRegex.test(form.email.trim())) {
             Update
           </button>
         </form>
+        {(form.roles?.length ?? 0) > 0 && (
+  <div className="max-w-xl w-[30%] mx-auto bg-[#2e2d2d] p-6 rounded-md mt-6">
+    <h3 className="text-lg font-semibold mb-4">My Roles</h3>
+    <div className="space-y-3 max-h-100 overflow-y-auto">
+      {form?.roles?.map((role, idx) => (
+        <div
+          key={idx}
+          className=" rounded p-3 text-sm bg-[#3a3a3a] overflow-hidden"
+        >
+          <div>
+            <strong>Role:</strong> {role.role}
+          </div>
+          <div>
+            <strong>Organization:</strong> {role.organization_name}
+          </div>
+          <div>
+            <strong>Area:</strong> {role.area_name}
+          </div>
+          <div>
+            <strong>Locker:</strong> {role.locker_serial_number}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+</div>
       </div>
       {loading && <Loader />}
 

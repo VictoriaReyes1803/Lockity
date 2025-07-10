@@ -1,11 +1,20 @@
+export interface Role {
+  area_name: string;
+  organization_name: string;
+  locker_serial_number: string;
+  role: string;
+  compartment_number?: number;
+}
+
 export interface User {
   id: number;
   name: string;
   last_name: string;
   second_last_name: string;
   email: string;
-  role?: string;
+  roles?: Role[];
 }
+
 export interface userlist{
   message: string;
   success: boolean;
@@ -23,6 +32,8 @@ export interface Users {
     role: string;
     organization: string;
     area: string;
+    compartment_number: number;
+    lockerId: number;
     locker_number_in_area: number;
   }[];
 }

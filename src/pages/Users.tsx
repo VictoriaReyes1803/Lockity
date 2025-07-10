@@ -6,9 +6,9 @@ import type { Users, User} from "../models/User";
 import { Toast } from 'primereact/toast';
 import { useRef } from "react";
 
-import { getLockers , getCompartments} from "../services/lockersService";
+import { getLockers , getCompartments, deleteRole } from "../services/lockersService";
 import { Paginator } from 'primereact/paginator';
-import { getUsersWithLockers, putUserRole } from "../services/usersService";
+import { getUsersWithLockers, putUserRole} from "../services/usersService";
 import type { Locker, Compartment } from "../models/locker";
 export default function Users() {
   const toast = useRef<Toast>(null);
@@ -26,6 +26,8 @@ export default function Users() {
   const [rows, setRows] = useState(10); 
   const [totalRecords, setTotalRecords] = useState(0);
 
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [selectedRoleIndex, setSelectedRoleIndex] = useState<number | null>(null);
 
   const [mode, setMode] = useState<"edit" | "add">("edit");
   const [newEmail, setNewEmail] = useState<string>("");
@@ -98,6 +100,12 @@ useEffect(() => {
     setMode("edit");
     fetchLockers(); 
   };
+  const openRemoveModal = (user: Users) => {
+  setSelectedUser(user);
+  setSelectedRoleIndex(null);
+  setShowRemoveModal(true);
+};
+
   const openAddModal = () => {
     setSelectedUser(null);
     fetchLockers(); 
@@ -260,13 +268,20 @@ const fetchCompartments = async (lockerId: number) => {
                     </td>
                     <td>{user.last_name}</td>
                     <td>{user.email}</td>
-                    <td>
+                    <td >
                       <button
-                        className="bg-[#FFD166] text-black px-4 py-1 rounded-full font-semibold hover:brightness-90 transition"
+                        className="bg-[#FFD166] mr-2 mb-2 text-black px-4 py-1 rounded-full font-semibold hover:brightness-90 transition"
                         onClick={() => openModal(user)}
                       >
                         Change role
                       </button>
+                      <button
+                        className="bg-[#515355] text-white px-4 py-1 rounded-full font-semibold hover:brightness-90 transition"
+                        onClick={() => openRemoveModal(user)}
+                      >
+                        Remove role
+                      </button>
+                        
                     </td>
                   </tr>
                 ))
@@ -303,6 +318,83 @@ const fetchCompartments = async (lockerId: number) => {
 
 
 
+{showRemoveModal && selectedUser && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-[#252525] rounded-xl p-6 text-white w-[350px]">
+      <h2 className="text-xl font-semibold mb-4">
+        Remove Role for {selectedUser.name}
+      </h2>
+
+      {selectedUser.assigned_lockers.length === 0 ? (
+        <p className="text-sm text-gray-300">No roles assigned to this user.</p>
+      ) : (
+        <div className="space-y-2 max-h-48 overflow-y-auto">
+          {selectedUser.assigned_lockers.map((role, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="selectedRole"
+                checked={selectedRoleIndex === index}
+                onChange={() => setSelectedRoleIndex(index)}
+              />
+              <div className="text-sm">
+                <strong>{role.role}</strong> - {role.serial_number}
+                <br />
+                <span className="text-xs text-gray-400">{role.area}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex justify-end space-x-2 mt-4">
+        <button
+          className="px-4 py-2 text-[black] bg-gray-300 rounded"
+          onClick={() => {
+            setShowRemoveModal(false);
+            setSelectedRoleIndex(null);
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          disabled={selectedRoleIndex === null}
+          className="px-4 py-2 text-[black] bg-red-500 rounded disabled:opacity-50"
+          onClick={async () => {
+            try {
+              const role = selectedUser.assigned_lockers[selectedRoleIndex!];
+              const user = selectedUser.id;
+              const response = await deleteRole(role.lockerId, role.compartment_number, user);
+
+              console.log("Role removed response:", response);
+              
+
+              toast.current?.show({
+                severity: "success",
+                summary: "Role Removed",
+                detail: `Role ${role.role} removed from ${selectedUser.name}`,
+                life: 3000,
+              });
+
+              setShowRemoveModal(false);
+              fetchUsers();
+            } catch (e) {
+              console.error("Error removing role:", e);
+              toast.current?.show({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to remove role",
+                life: 3000,
+              });
+            }
+          }}
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
 
 
@@ -356,30 +448,33 @@ const fetchCompartments = async (lockerId: number) => {
         >
           <option value="">-- Select locker --</option>
           {availableLockers.map((locker) => (
-          <option key={locker.id} value={locker.id}>
+          <option key={locker.locker_id} value={locker.locker_id}>
           Locker {locker.locker_serial_number} - {locker.area_name} 
           </option>
         ))}
 
         </select>
       </div>
-      <div className="mb-2">
-        <label className="block text-sm mb-1">Compartment</label>
-        <select
-          value={selectedCompartment ?? ""}
-          onChange={(e) => setSelectedCompartment(Number(e.target.value))}
-          className="w-full bg-[#444] p-2 border rounded mb-2"
-        >
-          <option value="">-- Select compartment --</option>
-          {availableCompartments.map((compartment) => (
-            <option key={compartment.id} value={compartment.id}>
-              Compartment {compartment.id} 
-            </option>
-          ))}
-        </select>
+      {selectedLocker && (
+        <div className="mb-2">
+          <label className="block text-sm mb-1">Compartment</label>
+          <select
+            value={selectedCompartment ?? ""}
+            onChange={(e) => setSelectedCompartment(Number(e.target.value))}
+            className="w-full bg-[#444] p-2 border rounded mb-2"
+          >
+            <option value="">-- Select compartment --</option>
+            {availableCompartments.map((compartment) => (
+              <option key={compartment.compartment_number} value={compartment.compartment_number}>
+                Compartment {compartment.compartment_number}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
 
-      </div>
+
       <div className="flex justify-end space-x-2 mt-4">
         <button
           className="px-4 py-2 text-[black] bg-gray-300 rounded"

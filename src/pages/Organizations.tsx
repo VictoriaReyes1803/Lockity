@@ -11,6 +11,8 @@ import { getLockers } from "../services/lockersService";
 export default function Lockers() {
   const toast = useRef<Toast>(null);
     const [organizationId, setOrganizationId] = useState<string>("");
+    const [orgLoaded, setOrgLoaded] = useState(false);
+
     const [page, setPage] = useState(0); 
     const [lockers, setLockers] = useState<Locker[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -30,18 +32,16 @@ export default function Lockers() {
     const [endTime, setEndTime] = useState("");
     const [scheduleDate, setScheduleDate] = useState("");
     const [repeatSchedule, setRepeatSchedule] = useState(false);
-    const [dayOfWeek, setDayOfWeek] = useState<number>(0); 
+    const [dayOfWeek, setDayOfWeek] = useState<number>(0); // 0 = Sunday
     const [showSchedules, setShowSchedules] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
   const orgsRaw = sessionStorage.getItem("organizations");
   const selectedOrg = sessionStorage.getItem("selected_organization_id");
 
   if (orgsRaw && selectedOrg) {
     setOrganizationId(selectedOrg);
-    
-    setLoading(false);
+    setOrgLoaded(true);
   }
 
 
@@ -49,7 +49,7 @@ export default function Lockers() {
 
 
    useEffect(() => {
-      if (!organizationId || organizationId === "") return;   
+      if (!orgLoaded || !organizationId || organizationId === "") return;   
     fetchLockers();
   }, [organizationId, page]);
 

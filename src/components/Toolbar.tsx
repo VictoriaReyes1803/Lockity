@@ -32,17 +32,40 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
           if (storedOrganizations) {
             const parsedOrgs = JSON.parse(storedOrganizations) as organization[];
             setOrganizations(parsedOrgs);
-            if (storedSelectedOrg) {
+
+            if (storedSelectedOrg && storedSelectedOrg !== selectedOrgId) {
               setSelectedOrgId(storedSelectedOrg);
+              sessionStorage.setItem("selected_organization_id", storedSelectedOrg);
               onChangeOrganization?.(storedSelectedOrg);
             }
-          } else {
+              if (!storedSelectedOrg && parsedOrgs.length > 0) {
+              console.log("No selected organization found in sessionStorage, setting first organization as default.");
+              const firstOrgId = parsedOrgs[0].id.toString();
+              setSelectedOrgId(firstOrgId);
+              sessionStorage.setItem("selected_organization_id", firstOrgId);
+              onChangeOrganization?.(firstOrgId);
+            }  
+
+
+          }        
+          else {
       
             const orgResponse = await getOrganization();
 
             if (orgResponse.success) {
               setOrganizations(orgResponse.data.items);
+              
+              const parsedOrgs = orgResponse.data.items as organization[];
               sessionStorage.setItem("organizations", JSON.stringify(orgResponse.data.items));
+
+              if (!storedSelectedOrg && parsedOrgs.length > 0) {
+   
+              const firstOrgId = parsedOrgs[0].id.toString();
+              setSelectedOrgId(firstOrgId);
+              sessionStorage.setItem("selected_organization_id", firstOrgId);
+              onChangeOrganization?.(firstOrgId);
+            }  
+
             } else {
               toast.current?.show({
                 severity: "warn",
@@ -70,7 +93,7 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
   };
 
   return (
-    <header className="w-full h-[60px] bg-gradient-to-t from-[#737373] to-[#2e2e2e] rounded-xl flex items-center justify-between px-6 text-white shadow-lg">
+    <header className="w-full h-[60px] bg-gradient-to-t from-[#737373] to-[#2e2e2e]  flex items-center justify-between px-6 text-white shadow-lg">
       <div className="flex items-center space-x-3">
         <span className="text-sm font-medium">Hello {user?.name ?? ""}!!</span>
       </div>
