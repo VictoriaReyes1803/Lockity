@@ -50,25 +50,3 @@ export interface ListCompartmentsResponse {
     success: boolean;
 
 }
-export interface organization {
-    id : number;
-    name: string;
-    description: string;
-    areas: {
-        id: number;
-        name: string;
-        description: string;
-    }
-
-}
-export interface OrganizationResponse {
-    
-    data:{
-    items: organization[];
-    total: number;
-    page: number;
-    limit: number;
-    }
-    message: string;
-    success: boolean;
-}

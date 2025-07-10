@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Me } from "../services/authService";
 import type { User } from "../models/User";
-import type { organization } from "../models/locker";
-import { getOrganization } from "../services/lockersService";
+import type { organization } from "../models/organization";
+import { getOrganization } from "../services/organizationsService";
 import { Toast } from "primereact/toast";
 
 interface ToolbarProps {

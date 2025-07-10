@@ -11,6 +11,7 @@ import CreateOrganization from './pages/welcome';
 import NotFound from './pages/notfound';
 import HomeDesktop from './pagesDesktop/home';
 import Lockers from './pages/Lockers';
+import Logs from './pages/Logs';
 const isElectron = () => window.navigator.userAgent.includes("Electron");
 
 function App() {
@@ -23,19 +24,7 @@ function App() {
 
        <Route path="/callback" element={<Callback />} />
        <Route path="/welcome" element={<PrivateRoute> <CreateOrganization /></PrivateRoute>} />
-    <Route
-      path="/organization"
-      element={
-        <PrivateRoute>
-          <Haslocker>
-            <div>
-              <Sidebar />
-              <OrganizationsPage />
-            </div>
-          </Haslocker>
-        </PrivateRoute>
-      }
-    />
+       <Route path="/organization" element={<PrivateRoute>  <Haslocker><div><Sidebar /> <OrganizationsPage /></div></Haslocker> </PrivateRoute>} />
     <Route
       path="/lockers"
       element={
@@ -47,6 +36,19 @@ function App() {
                 <Lockers />
               </div>
            
+          </Haslocker>
+        </PrivateRoute>
+      }
+    />
+    <Route
+      path="/Logs"
+      element={
+        <PrivateRoute>
+          <Haslocker>
+            <div>
+              <Sidebar />
+              <Logs />
+            </div>
           </Haslocker>
         </PrivateRoute>
       }
@@ -77,6 +79,7 @@ function App() {
         </PrivateRoute>
       }
     />
+
 
        <Route path="*" element={<NotFound />} />
       </Routes>

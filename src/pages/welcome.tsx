@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
-import { postOrganization } from "../services/lockersService"; 
+import { postOrganization } from "../services/organizationsService"; 
 import Loader from "../components/Loader";
   import { useEffect } from "react";
   import { haslocker } from "../services/authService";

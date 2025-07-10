@@ -15,7 +15,7 @@ const navItems = [
   { label: "Lockers", icon: "/images/Locker Icon.svg", route: "/lockers" },
   { label: "Users", icon: "/images/users Icon.svg", route: "/users", webOnly: true },
   { label: "Organization", icon: "/images/Organization Icon.svg", route: "/organization" },
-  { label: "Logs", icon: "/images/Tuerca.svg", route: "/settings" },
+  { label: "Logs", icon: "/images/Tuerca.svg", route: "/Logs" },
 ];
 
 const Sidebar = () => {

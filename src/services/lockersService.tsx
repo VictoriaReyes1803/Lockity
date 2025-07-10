@@ -1,6 +1,7 @@
 
 // src/services/lockersService.ts
-import type { LockerListResponse , ListCompartmentsResponse, OrganizationResponse} from "../models/locker";
+import type { LockerListResponse , ListCompartmentsResponse} from "../models/locker";
+//import type { OrganizationResponse } from "../models/organization";
 import {getApi} from "./interceptor";
 const api = getApi("nest");
 const pre = 'api/';
@@ -34,27 +35,6 @@ export const getCompartments = async (
   
 };
 
-
-export const getOrganization = async (): Promise<OrganizationResponse> => {
-    const response = await api.get(`${pre}organizations`);
-
-    return response.data as OrganizationResponse;
-    }
-    
-
-    export const postOrganization = async (payload: {
-        name: string;
-        description: string;
-        area : {
-            name: string;
-            description: string;
-        };
-        locker_serial_number: string;
-    }): Promise<void> => {
-        await api.post(`${pre}organizations`, payload);
-    }
-    
-   
 
 
   export const putlocker = async (

@@ -1,0 +1,42 @@
+import type {  OrganizationResponse} from "../models/organization";
+import {getApi} from "./interceptor";
+const api = getApi("nest");
+const pre = 'api/';
+
+
+
+export const getOrganization = async (): Promise<OrganizationResponse> => {
+    const response = await api.get(`${pre}organizations`);
+
+    return response.data as OrganizationResponse;
+    }
+    
+
+    export const postOrganization = async (payload: {
+        name: string;
+        description: string;
+        area : {
+            name: string;
+            description: string;
+        };
+        locker_serial_number: string;
+    }): Promise<void> => {
+        await api.post(`${pre}organizations`, payload);
+        return;
+    }
+    
+   
+    export const getAreas = async (organizationId: string): Promise<any> => {
+        const response = await api.get(`${pre}organizations/${organizationId}/areas`);
+        return response.data;
+    }
+
+
+    export const putOrganization = async (payload: {
+        name: string;
+        description: string;
+    }, organizationId: number)
+    : Promise<void> => {
+        await api.put(`${pre}organizations/${organizationId}`, payload);
+        return;
+    }
