@@ -1,11 +1,11 @@
 import type {User} from "./User";
 export interface Schedule {
-day_of_week: string;
+day_of_week: string | null;
 start_time: string;
 end_time: string;
 repeat_schedule: boolean;
-schendule_date: string;
-schendule_id: number;
+schedule_date: string | null;
+schedule_id: number;
 }
 export interface Locker {
   locker_id: number;

@@ -23,7 +23,7 @@ export default function Lockers() {
   {
     startTime: "",
     endTime: "",
-    dayOfWeek: 0,
+    dayOfWeek: -1,
     scheduleDate: "",
     repeatSchedule: false,
   },
@@ -46,6 +46,7 @@ export default function Lockers() {
 
     const updateSchedule = (index: number, newSchedule: typeof schedules[0]) => {
   const updated = [...schedules];
+  
   updated[index] = newSchedule;
   setSchedules(updated);
 };
@@ -191,17 +192,17 @@ const removeSchedule = (index: number) => {
                     {locker.schedules && locker.schedules.length > 0 && (
                       <div className="">
                       <h4 className="text-sm font-semibold text-white">Schedules:</h4>
-                      <ul className="text-sm text-gray-300 list-disc ml-4">
+                      <ul className="text-sm text-gray-300 list-disc ml-4 mb-3">
                       {locker.schedules
                       ?.filter(
-                        (schedule) => schedule.day_of_week || schedule.schendule_date
+                        (schedule) => schedule.day_of_week || schedule.schedule_date
                       )
                       
                       .map((schedule, index) => (
                       <li key={index}>
                         {schedule.day_of_week
                         ? `${schedule.day_of_week.toUpperCase()}: ${schedule.start_time} - ${schedule.end_time}`
-                         : `Date: ${schedule.schendule_date} — ${schedule.start_time} - ${schedule.end_time}`}
+                        : `Date: ${new Date(schedule.schedule_date!).toLocaleDateString()} - ${schedule.start_time} - ${schedule.end_time}`}
                       <button
                       onClick={() => {
                         setIsEditMode(true);
@@ -214,24 +215,24 @@ const removeSchedule = (index: number) => {
                           {
                             startTime: schedule.start_time.slice(0, 5),
                             endTime: schedule.end_time.slice(0, 5),
-                            dayOfWeek: ["sun", "mon", "tue", "wed", "thu", "fri", "sat"].indexOf(
-                              schedule.day_of_week
-                            ),
-                            scheduleDate: schedule.schendule_date ?? "",
+                            dayOfWeek: typeof schedule.day_of_week === "string"
+                            ? ["sun", "mon", "tue", "wed", "thu", "fri", "sat"].indexOf(schedule.day_of_week)
+                            : -1, 
+                            scheduleDate: schedule.schedule_date ?? "",
                             repeatSchedule: schedule.repeat_schedule,
                           },
                         ]);
 
                         setScheduleBeingEdited({
                           lockerId: locker.locker_id,
-                          scheduleId: schedule.schendule_id,
+                          scheduleId: schedule.schedule_id,
                         });
 
                         setShowModal(true);
                       }}
-                      className="text-xs text-blue-400 hover:underline"
+                     className="ml-2 mt-1 px-3 py-1 text-sm bg-[#FFD166] text-black rounded-full font-semibold hover:brightness-90 transition"
                     >
-                      Edit
+                       ✎
                     </button>
                                       
                       </li>
@@ -262,7 +263,7 @@ const removeSchedule = (index: number) => {
                               {
                                 startTime: "",
                                 endTime: "",
-                                dayOfWeek: 0,
+                                dayOfWeek: -1,
                                 scheduleDate: "",
                                 repeatSchedule: false,
                               },
@@ -350,8 +351,9 @@ const removeSchedule = (index: number) => {
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div className="bg-[#252525] rounded-xl p-6 text-white w-[400px] max-h-[90vh] overflow-y-auto">
       <h2 className="text-xl font-semibold mb-4">
-        {isEditMode ? "Update Locker" : "Add Locker"}
-      </h2>
+  {scheduleBeingEdited ? "Edit Schedule" : isEditMode ? "Update Locker" : "Add Locker"}
+</h2>
+
 
       <div className="mb-2">
         <label className="block text-sm mb-1">Serial Number</label>
@@ -365,31 +367,37 @@ const removeSchedule = (index: number) => {
         />
       </div>
 
-      <div className="mb-2">
-        <label className="block text-sm mb-1">Area</label>
-        <select
-          value={selectedAreaId ?? ""}
-          onChange={(e) => setSelectedAreaId(Number(e.target.value))}
-          className="w-full bg-[#444] p-2 border rounded mb-2"
-        >
-          <option value="">Select area</option>
-          {updateAreas.map((area) => (
-            <option key={area.id} value={area.id}>
-              {area.name} – {area.description}
-            </option>
-          ))}
-        </select>
-      </div>
+      {!scheduleBeingEdited && (
+  <div className="mb-2">
+    <label className="block text-sm mb-1">Area</label>
+    <select
+      value={selectedAreaId ?? ""}
+      onChange={(e) => setSelectedAreaId(Number(e.target.value))}
+      className="w-full bg-[#444] p-2 border rounded mb-2"
+    >
+      <option value="">Select area</option>
+      {updateAreas.map((area) => (
+        <option key={area.id} value={area.id}>
+          {area.name} – {area.description}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
 
-      <div className="flex items-center mb-4">
-        <input
-          type="checkbox"
-          checked={addSchedule}
-          onChange={(e) => setAddSchedule(e.target.checked)}
-          className="mr-2 accent-[#FFD166]"
-        />
-        <label className="text-sm">Add Schedule</label>
-      </div>
+
+      {!scheduleBeingEdited && (
+  <div className="flex items-center mb-4">
+    <input
+      type="checkbox"
+      checked={addSchedule}
+      onChange={(e) => setAddSchedule(e.target.checked)}
+      className="mr-2 accent-[#FFD166]"
+    />
+    <label className="text-sm">Add Schedule</label>
+  </div>
+)}
+
 
       {addSchedule &&
         schedules.map((s, index) => (
@@ -428,44 +436,47 @@ const removeSchedule = (index: number) => {
                 className="w-full bg-[#444] p-2 border rounded"
               />
             </div>
-
-                {s.repeatSchedule && (
-            <div className="mb-2">
-              <label className="block text-sm mb-1">Day of Week</label>
-              <select
-                value={s.dayOfWeek}
-                onChange={(e) =>
-                  updateSchedule(index, {
+                  {s.repeatSchedule && (
+              <div className="mb-2">
+                <label className="block text-sm mb-1">Day of Week</label>
+                <select
+                    value={s.dayOfWeek >= 0 ? s.dayOfWeek : ""}
+                    onChange={(e) =>
+                    updateSchedule(index, {
                     ...s,
-                    dayOfWeek: Number(e.target.value),
-                  })
-                }
-                className="w-full bg-[#444] p-2 border rounded"
-              >
-                <option value={0}>Sunday</option>
-                <option value={1}>Monday</option>
-                <option value={2}>Tuesday</option>
-                <option value={3}>Wednesday</option>
-                <option value={4}>Thursday</option>
-                <option value={5}>Friday</option>
-                <option value={6}>Saturday</option>
-              </select>
-            </div>)}
-
+                    dayOfWeek: e.target.value === "" ? -1 : Number(e.target.value),
+                    })
+                    }
+                    className="w-full bg-[#444] p-2 border rounded"
+                    >
+                    <option value="">Select day</option>
+                    <option value={0}>Sunday</option>
+                    <option value={1}>Monday</option>
+                    <option value={2}>Tuesday</option>
+                    <option value={3}>Wednesday</option>
+                    <option value={4}>Thursday</option>
+                    <option value={5}>Friday</option>
+                    <option value={6}>Saturday</option>
+                    </select>
+                    
+  
+              </div>
+            )}
             {!s.repeatSchedule && (
               <div className="mb-2">
                 <label className="block text-sm mb-1">Schedule Date</label>
-                <input
-                  type="date"
-                  value={s.scheduleDate}
-                  onChange={(e) =>
-                    updateSchedule(index, {
-                      ...s,
-                      scheduleDate: e.target.value,
-                    })
-                  }
-                  className="w-full bg-[#444] p-2 border rounded"
-                />
+               <input
+                type="date"
+                value={s.scheduleDate ? s.scheduleDate.slice(0, 10) : ""}
+                onChange={(e) =>
+                  updateSchedule(index, {
+                    ...s,
+                    scheduleDate: e.target.value,
+                  })
+                }
+                className="w-full bg-[#444] p-2 border rounded"
+              />
+
               </div>
             )}
 
@@ -474,19 +485,24 @@ const removeSchedule = (index: number) => {
                 type="checkbox"
                 checked={s.repeatSchedule}
                 onChange={(e) =>
+                  
                   updateSchedule(index, {
                     ...s,
+                    
                     repeatSchedule: e.target.checked,
                   })
+                 
                 }
                 className="mr-2 accent-[#FFD166]"
+                
               />
+              
               <label>Repeat Schedule</label>
             </div>
           </div>
         ))}
 
-      {addSchedule && (
+      {addSchedule && !scheduleBeingEdited && (
         <button
           type="button"
           onClick={() =>
@@ -495,7 +511,7 @@ const removeSchedule = (index: number) => {
               {
                 startTime: "",
                 endTime: "",
-                dayOfWeek: 0,
+                dayOfWeek: -1,
                 scheduleDate: "",
                 repeatSchedule: false,
               },
@@ -567,7 +583,8 @@ const removeSchedule = (index: number) => {
                 start_time: `${s.startTime}:00`,
                 end_time: `${s.endTime}:00`,
                 repeat_schedule: s.repeatSchedule,
-                schendule_date: s.repeatSchedule ? "" : s.scheduleDate || "",
+                schendule_date: s.repeatSchedule ? null : s.scheduleDate || null,
+
               };
 
               await putSchedule(scheduleBeingEdited.lockerId, scheduleBeingEdited.scheduleId, payload);
@@ -633,7 +650,7 @@ const removeSchedule = (index: number) => {
                             {
                               startTime: "",
                               endTime: "",
-                              dayOfWeek: 0,
+                              dayOfWeek: -1,
                               scheduleDate: "",
                               repeatSchedule: false,
                             },

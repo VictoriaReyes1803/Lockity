@@ -44,11 +44,11 @@ export const getCompartments = async (
    serial_number: string;
    new_schendule?:
    {
-    day_of_week: number;
+    day_of_week: number | null;
     start_time: string;
     end_time: string;
     repeat_schedule: boolean;
-    schendule_date: string;
+    schendule_date: string | null;
    }[];
 
     }
@@ -87,11 +87,11 @@ export const getCompartments = async (
     lockerId: number,
     schenduleId: number,
     payload: {
-      day_of_week: string;
+      day_of_week: string | null;
       start_time: string;
       end_time: string;
       repeat_schedule: boolean;
-      schendule_date: string;
+      schendule_date: string | null;
     }
   ): Promise<void> => {
     const response = await api.put(`${pre}lockers/${lockerId}/schedules/${schenduleId}`,
