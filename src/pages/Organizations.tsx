@@ -3,7 +3,7 @@ import Toolbar from "../components/Toolbar";
 import { Toast } from "primereact/toast";
 import { useRef, useState, useEffect } from "react";
 import Loader from "../components/Loader";
-import type { organization } from "../models/organization";
+import type { organization, Area } from "../models/organization";
 import { getOrganization } from "../services/organizationsService";
 import { getAreas } from "../services/organizationsService";
 export default function Lockers() {
@@ -11,7 +11,7 @@ export default function Lockers() {
     const [organizationId, setOrganizationId] = useState<string>("");
     const [orgLoaded, setOrgLoaded] = useState(false);
     const [organizations, setOrganizations] = useState<organization[]>([]);
-    const [areas, setAreas] = useState<{ id: number; name: string; description: string }[]>([]);
+    const [areas, setAreas] = useState<Area[]>([]);
     const [page, setPage] = useState(0); 
 
 
@@ -62,6 +62,7 @@ export default function Lockers() {
     try {
       setLoading(true);
       const areaResponse = await getAreas(organizationId);
+      console.log("Areas response:", areaResponse);
       setAreas(areaResponse.data.items || []);
     } catch (err) {
       console.error("Failed to fetch areas", err);
@@ -153,6 +154,21 @@ export default function Lockers() {
         <div key={area.id} className="border-b pb-1">
           <h4 className="text-md font-medium">{area.name}</h4>
           <p className="text-sm text-gray-400">{area.description}</p>
+
+          {Array.isArray(area.lockers) && area.lockers.length > 0 ? (
+
+          <ul className="mt-1 ml-5 list-disc list-inside text-xs text-gray-400 space-y-1">
+            {area.lockers.map((locker) => (
+              <li key={locker.id} className="flex items-center gap-1">
+                <i className="pi pi-lock text-gray-500" />
+                <span>{locker.serial_number}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-xs text-gray-500 ml-5 italic">No lockers</div>
+        )}
+        
         </div>
       ))
     ) : (

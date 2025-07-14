@@ -5,7 +5,7 @@ start_time: string;
 end_time: string;
 repeat_schedule: boolean;
 schendule_date: string;
-
+schendule_id: number;
 }
 export interface Locker {
   locker_id: number;

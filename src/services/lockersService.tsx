@@ -52,20 +52,51 @@ export const getCompartments = async (
    }[];
 
     }
+
+    
   ): Promise<void> => {
     const response = await api.put(`${pre}lockers`, payload);
-    console.log(payload)
+    console.log('cuerpo',payload)
+    console.log("Put locker response:", response.data);
     return response.data;
   }
 
   export const deleteRole = async (
     lockerId: number,
-    compartmentNumber: number,
-    userId: number
+    userId: number,
+
+    
+      compartmentNumber: number,
+      deleteAllAccess: boolean
+    
   ): Promise<void> => {
     const response = await api.delete(
-      `${pre}lockers/${lockerId}/${compartmentNumber}/users/${userId}`
+      `${pre}lockers/${lockerId}/${userId}`,
+      {
+        params: {
+          compartmentNumber,
+          deleteAllAccess,
+        },
+      }
     );
     console.log("Delete role response:", response.data);
+    return response.data;
+  }
+
+  export const putSchedule = async (
+    lockerId: number,
+    schenduleId: number,
+    payload: {
+      day_of_week: string;
+      start_time: string;
+      end_time: string;
+      repeat_schedule: boolean;
+      schendule_date: string;
+    }
+  ): Promise<void> => {
+    const response = await api.put(`${pre}lockers/${lockerId}/schedules/${schenduleId}`,
+      payload
+    );
+    console.log("Put schedule response:", response.data);
     return response.data;
   }

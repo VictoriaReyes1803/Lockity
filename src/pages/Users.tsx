@@ -14,7 +14,7 @@ export default function Users() {
   const toast = useRef<Toast>(null);
   const [filterRole, setFilterRole] = useState<string>("");
   const [organizationId, setOrganizationId] = useState<string>("");
-
+  const [deleteAllAccess, setDeleteAllAccess] = useState<boolean>(true);
   const [users, setUsers] = useState<Users[]>([]);
   const [selectedUser, setSelectedUser] = useState<Users | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -59,6 +59,7 @@ useEffect(() => {
     setLoading(true);
     try {
       const data = await getUsersWithLockers(orgId, currentPage + 1, currentRows,roleFilter || undefined);
+
       const currentUser = JSON.parse(sessionStorage.getItem("user") || "{}");
 
       const filteredUsers = data.items.filter(
@@ -260,6 +261,19 @@ const fetchCompartments = async (lockerId: number) => {
                         {user.assigned_lockers.map((locker, idx) => (
                           <div key={idx}>
                             {locker.role} - {locker.serial_number} ({locker.area})
+                            <div className="ml-4 text-xs text-gray-400">
+                                  {locker.role === "super_admin" ? (
+                                    <span>All compartments</span>
+                                  ) : locker.compartments && locker.compartments.length > 0 ? (
+                                    locker.compartments.map((comp) => (
+                                      <div key={comp.compartment_id}>- Compartment {comp.compartment_number}</div>
+                                    ))
+                                  ) : (
+                                    <span>No compartments assigned</span>
+                                  )}
+                                </div>
+
+
                           </div>
                         ))}
                       </div>
@@ -363,8 +377,10 @@ const fetchCompartments = async (lockerId: number) => {
           onClick={async () => {
             try {
               const role = selectedUser.assigned_lockers[selectedRoleIndex!];
+              console.log("Removing role:", role);
               const user = selectedUser.id;
-              const response = await deleteRole(role.lockerId, role.compartment_number, user);
+              const compartmentNumber = role.compartments?.[0]?.compartment_number ?? null;
+              const response = await deleteRole(role.locker_id,user, compartmentNumber, deleteAllAccess);
 
               console.log("Role removed response:", response);
               

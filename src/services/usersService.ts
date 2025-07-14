@@ -13,6 +13,7 @@ export const getUsersWithLockers = async (
     const response = await api.get("/api/lockers/user-list/" + organizationId, {
       params: { page, limit, ...(role ? { role } : {}) },
     });
+    console.log("User list response:", response.data);
     return response.data.data as UserListResponse;
   
 };

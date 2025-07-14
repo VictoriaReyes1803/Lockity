@@ -20,6 +20,10 @@ export interface userlist{
   success: boolean;
   data: User;
 }
+export interface compartments{
+  compartment_id:number;
+  compartment_number: number;
+}
 
 export interface Users {
   id: number;
@@ -32,8 +36,9 @@ export interface Users {
     role: string;
     organization: string;
     area: string;
-    compartment_number: number;
-    lockerId: number;
+
+    compartments: compartments[];
+    locker_id: number;
     locker_number_in_area: number;
   }[];
 }
