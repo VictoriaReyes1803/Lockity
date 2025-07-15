@@ -15,6 +15,7 @@ const navItems = [
   { label: "Lockers", icon: "/images/Locker Icon.svg", route: "/lockers" },
   { label: "Users", icon: "/images/users Icon.svg", route: "/users", webOnly: true },
   { label: "Organization", icon: "/images/Organization Icon.svg", route: "/organization" },
+  {label: "Dashboard", icon: "/images/Dashboard.svg", route: "/dashboard", electronOnly: true},
   { label: "Logs", icon: "/images/Tuerca.svg", route: "/Logs" },
 ];
 
@@ -83,7 +84,13 @@ const navigate = useNavigate();
       
       <nav className="flex flex-col gap-4 w-full mt-4">
         {navItems
-        .filter(item => !item.webOnly || !isElectron())
+        .filter(item => {
+          if (item.webOnly && isElectron()) return false;
+          if (item.electronOnly && !isElectron()) return false;
+          return true;
+        })
+
+
         .map((item, i) => (
           <a
             key={i}

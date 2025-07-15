@@ -3,15 +3,21 @@ import Toolbar from "../components/Toolbar";
 import { Toast } from "primereact/toast";
 import { useRef, useState, useEffect } from "react";
 import Loader from "../components/Loader";
+import { ConfirmDialog } from 'primereact/confirmdialog';
+import { confirmDialog } from 'primereact/confirmdialog';
+
 import { putlocker } from "../services/lockersService";
 import type { Locker, Schedule } from "../models/locker";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { Compartment } from "../models/locker";
-import { getCompartments } from "../services/lockersService";
+import { getCompartments, deleteSchedule } from "../services/lockersService";
 import { getLockers , putSchedule} from "../services/lockersService"; 
+
 export default function Lockers() {
   const toast = useRef<Toast>(null);
     const [organizationId, setOrganizationId] = useState<string>("");
     const [page, setPage] = useState(0); 
+    const [deleteAllSchedules, setDeleteAllSchedules] = useState(false);
     const [lockers, setLockers] = useState<Locker[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [compartments, setCompartments] = useState<Compartment[]>([]);
@@ -129,7 +135,11 @@ const removeSchedule = (index: number) => {
           }}
         />
         <Toast ref={toast} />
-
+          <ConfirmDialog 
+          style={{ width: '30vw', background: '#2e2d2d' }}
+          contentStyle={{ background: '#2e2d2d', color: 'white' }}
+          headerStyle={{ background: '#2e2d2d', color: 'white' }}
+          />
         <div className="mt-6 bg-[#252525] rounded-xl p-6 overflow-x-auto ml-6 mr-2">
           <div className="flex justify-between items-center mb-4">
             <button className="bg-[#555555] text-white px-4 py-1 rounded-full font-semibold hover:brightness-90 transition">
@@ -210,6 +220,7 @@ const removeSchedule = (index: number) => {
                         setSerialNumber(locker.locker_serial_number.toString());
                         setSelectedAreaId(locker.area_id);
                         setAddSchedule(true);
+                        setIsEditMode(false);
 
                         setSchedules([
                           {
@@ -230,10 +241,50 @@ const removeSchedule = (index: number) => {
 
                         setShowModal(true);
                       }}
-                     className="ml-2 mt-1 px-3 py-1 text-sm bg-[#FFD166] text-black rounded-full font-semibold hover:brightness-90 transition"
+                     className="ml-2 p-1 rounded-full  text-white hover:brightness-110 hover:bg-[#555555] transition"
                     >
                        ✎
                     </button>
+
+
+                        <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                           confirmDialog({
+                            message: "Are you sure you want to delete this schedule?",
+                            header: "Confirm Deletion",
+                            icon: "pi pi-exclamation-triangle",
+                             acceptLabel: "✅ Yes",
+                              rejectLabel: "❌ No",
+                              acceptClassName: "p-button-danger",
+                              rejectClassName: "p-button-secondary mr-3",
+                            accept: async () => {
+                          try {
+                            await deleteSchedule(locker.locker_id, schedule.schedule_id, deleteAllSchedules );
+                            toast.current?.show({
+                              severity: "success",
+                              summary: "Schedule Deleted",
+                              detail: "Schedule deleted successfully",
+                              life: 3000,
+                            });
+                            fetchLockers();
+                          } catch (err) {
+                            console.error("Error deleting schedule:", err);
+                            toast.current?.show({
+                              severity: "error",
+                              summary: "Error",
+                              detail: "Could not delete schedule.",
+                            });
+                          }
+                        },
+                          });
+                        }}
+                          className="ml-1 mt-1 px-1 py-1 text-sm text-white rounded-full font-semibold hover:brightness-90 hover:bg-[#FFD166] transition"
+                        >
+                          <FontAwesomeIcon icon="trash" />
+
+                        </button>
+                    
                                       
                       </li>
                       ))}
@@ -436,7 +487,28 @@ const removeSchedule = (index: number) => {
                 className="w-full bg-[#444] p-2 border rounded"
               />
             </div>
-                  {s.repeatSchedule && (
+              
+            {!s.repeatSchedule && (
+              <div className="mb-2">
+                <label className="block text-sm mb-1">Schedule Date</label>
+               <input
+                type="date"
+                value={s.scheduleDate ? s.scheduleDate.slice(0, 10) : ""}
+                onChange={(e) =>
+                  updateSchedule(index, {
+                    ...s,
+                    scheduleDate: e.target.value,
+                  })
+                }
+                className="w-full bg-[#444] p-2 border rounded"
+              />
+
+              </div>
+            )}
+
+
+
+   {Boolean(s.repeatSchedule) && (
               <div className="mb-2">
                 <label className="block text-sm mb-1">Day of Week</label>
                 <select
@@ -457,29 +529,7 @@ const removeSchedule = (index: number) => {
                     <option value={4}>Thursday</option>
                     <option value={5}>Friday</option>
                     <option value={6}>Saturday</option>
-                    </select>
-                    
-  
-              </div>
-            )}
-            {!s.repeatSchedule && (
-              <div className="mb-2">
-                <label className="block text-sm mb-1">Schedule Date</label>
-               <input
-                type="date"
-                value={s.scheduleDate ? s.scheduleDate.slice(0, 10) : ""}
-                onChange={(e) =>
-                  updateSchedule(index, {
-                    ...s,
-                    scheduleDate: e.target.value,
-                  })
-                }
-                className="w-full bg-[#444] p-2 border rounded"
-              />
-
-              </div>
-            )}
-
+                    </select></div>)}
             <div className="flex items-center mb-2">
               <input
                 type="checkbox"
@@ -517,7 +567,7 @@ const removeSchedule = (index: number) => {
               },
             ])
           }
-          className="text-sm text-blue-400 mb-4 hover:underline"
+          className="text-sm text-yellow-400 mb-4 hover:underline"
         >
           + Add another schedule
         </button>
@@ -579,11 +629,13 @@ const removeSchedule = (index: number) => {
               const s = schedules[0]; 
 
               const payload = {
-                day_of_week: ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][s.dayOfWeek],
+                 day_of_week: s.repeatSchedule && s.dayOfWeek >= 0
+                  ? ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][s.dayOfWeek]
+                  : null,
                 start_time: `${s.startTime}:00`,
                 end_time: `${s.endTime}:00`,
                 repeat_schedule: s.repeatSchedule,
-                schendule_date: s.repeatSchedule ? null : s.scheduleDate || null,
+                schedule_date: s.repeatSchedule ? null : s.scheduleDate || null,
 
               };
 
@@ -625,11 +677,11 @@ const removeSchedule = (index: number) => {
                                 : null,
                               start_time: `${s.startTime}:00`,
                               end_time: `${s.endTime}:00`,
-                              repeat_schedule: s.repeatSchedule,
+                              repeat_schedule: Boolean(s.repeatSchedule),
                               schedule_date: s.repeatSchedule ? null : s.scheduleDate || null,
-                            }));
+                            })
+                          );
                           }
-
                           const response = await putlocker(payload);
                           console.log("Locker updated:", response);
                           fetchLockers();

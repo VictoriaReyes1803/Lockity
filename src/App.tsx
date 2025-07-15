@@ -12,6 +12,7 @@ import NotFound from './pages/notfound';
 import HomeDesktop from './pagesDesktop/home';
 import Lockers from './pages/Lockers';
 import Logs from './pages/Logs';
+
 import Dashboard from './pagesDesktop/dashboard'; 
 const isElectron = () => window.navigator.userAgent.includes("Electron");
 
@@ -80,10 +81,21 @@ function App() {
         </PrivateRoute>
       }
     />
+    {isElectron() && (
     <Route
       path="/dashboard"
-      element={<Dashboard />}
+      element={
+         <PrivateRoute>
+          <Haslocker>
+             <div>
+              <Sidebar />
+      <Dashboard />
+        </div>
+          </Haslocker>
+        </PrivateRoute>
+      }
     />
+    )}
 
 
        <Route path="*" element={<NotFound />} />

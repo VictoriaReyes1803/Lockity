@@ -198,32 +198,58 @@ if (!emailRegex.test(form.email.trim())) {
             Update
           </button>
         </form>
-        {(form.roles?.length ?? 0) > 0 && (
+      {(form.roles?.length ?? 0) > 0 && (
   <div className="max-w-xl w-[30%] mx-auto bg-[#2e2d2d] p-6 rounded-md mt-6">
     <h3 className="text-lg font-semibold mb-4">My Roles</h3>
     <div className="space-y-3 max-h-100 overflow-y-auto">
-      {form?.roles?.map((role, idx) => (
-        <div
-          key={idx}
-          className=" rounded p-3 text-sm bg-[#3a3a3a] overflow-hidden"
-        >
-          <div>
-            <strong>Role:</strong> {role.role}
+      {(() => {
+        const groupedRoles = new Map<string, any>();
+
+        for (const role of form.roles!) {
+          if (role.role === "super_admin") {
+            if (!groupedRoles.has(role.organization_name)) {
+              groupedRoles.set(role.organization_name, {
+                role: "super_admin",
+                organization_name: role.organization_name,
+              });
+            }
+          } else {
+            // Use locker_serial_number as unique key
+            groupedRoles.set(
+              `${role.role}-${role.organization_name}-${role.area_name}-${role.locker_serial_number}`,
+              role
+            );
+          }
+        }
+
+        return Array.from(groupedRoles.values()).map((role, idx) => (
+          <div key={idx} className="rounded p-3 text-sm bg-[#3a3a3a] overflow-hidden">
+            <div>
+              <strong>Role:</strong> {role.role}
+            </div>
+            <div>
+              <strong>Organization:</strong> {role.organization_name}
+            </div>
+            {role.role !== "super_admin" && (
+              <>
+                <div>
+                  <strong>Area:</strong> {role.area_name}
+                </div>
+                <div>
+                  <strong>Locker:</strong> {role.locker_serial_number}
+                </div>
+              </>
+            )}
+            {role.role === "super_admin" && (
+              <div className="text-[#FFD166] mt-1">Access to all lockers and areas</div>
+            )}
           </div>
-          <div>
-            <strong>Organization:</strong> {role.organization_name}
-          </div>
-          <div>
-            <strong>Area:</strong> {role.area_name}
-          </div>
-          <div>
-            <strong>Locker:</strong> {role.locker_serial_number}
-          </div>
-        </div>
-      ))}
+        ));
+      })()}
     </div>
   </div>
 )}
+
 </div>
       </div>
       {loading && <Loader />}

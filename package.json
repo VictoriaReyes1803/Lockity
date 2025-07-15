@@ -10,6 +10,9 @@
     "dist": "electron-builder"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@tanstack/react-query": "^5.81.2",
     "axios": "^1.10.0",
     "js-cookie": "^3.0.5",
@@ -25,7 +28,7 @@
   "devDependencies": {
     "@eslint/js": "^9.25.0",
     "@types/js-cookie": "^3.0.6",
-    "@types/react": "^19.1.2",
+    "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.2",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^4.4.1",

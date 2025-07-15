@@ -228,7 +228,6 @@ const fetchCompartments = async (lockerId: number) => {
                 className="bg-[#444] p-2 rounded text-white"
               >
                 <option value="">All</option>
-                <option value="super_admin">Super Admin</option>
                 <option value="admin">Admin</option>
                 <option value="user">User</option>
               </select>

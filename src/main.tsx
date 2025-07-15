@@ -7,6 +7,10 @@ import 'primereact/resources/themes/lara-dark-indigo/theme.css';  // puedes camb
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
+import { faEdit, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { library } from '@fortawesome/fontawesome-svg-core';
+
+library.add(faTrash, faEdit,faPlus  );
 ReactDOM.createRoot(document.getElementById('root')!).render(
  // <React.StrictMode>
     <BrowserRouter>

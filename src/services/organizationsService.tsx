@@ -25,18 +25,33 @@ export const getOrganization = async (): Promise<OrganizationResponse> => {
         return;
     }
     
+export const putOrganization = async (payload: {
+    name: string;
+    description: string;
+}, organizationId: number)
+: Promise<any> => {
+    const response = await api.put(`${pre}organizations/${organizationId}`, payload);
+    return response;
+}
+
+export const getAreas = async (organizationId: string): Promise<any> => {
+    const response = await api.get(`${pre}organizations/${organizationId}/areas`);
+    return response.data;
+}
+
+export const putArea = async (payload: {
+    name: string;
+    description: string;
+}, areaId: number): Promise<any> => {
+    const response = await api.put(`${pre}organizations/${areaId}/areas/`, payload);
+    return response;
+}
+
+export const postArea = async ( organization_id: number,payload: {
+    name: string;
+    description: string;
    
-    export const getAreas = async (organizationId: string): Promise<any> => {
-        const response = await api.get(`${pre}organizations/${organizationId}/areas`);
-        return response.data;
-    }
-
-
-    export const putOrganization = async (payload: {
-        name: string;
-        description: string;
-    }, organizationId: number)
-    : Promise<void> => {
-        await api.put(`${pre}organizations/${organizationId}`, payload);
-        return;
-    }
+}): Promise<any> => {
+    const response = await api.post(`${pre}organizations/${organization_id}/areas`, payload);
+    return response;
+}

@@ -42,13 +42,13 @@ export const getCompartments = async (
    organization_id: number;
    area_id: number;
    serial_number: string;
-   new_schendule?:
+   new_schedule?:
    {
     day_of_week: number | null;
     start_time: string;
     end_time: string;
     repeat_schedule: boolean;
-    schendule_date: string | null;
+    schedule_date: string | null;
    }[];
 
     }
@@ -85,18 +85,36 @@ export const getCompartments = async (
 
   export const putSchedule = async (
     lockerId: number,
-    schenduleId: number,
+    scheduleId: number,
     payload: {
       day_of_week: string | null;
       start_time: string;
       end_time: string;
       repeat_schedule: boolean;
-      schendule_date: string | null;
+      schedule_date: string | null;
     }
   ): Promise<void> => {
-    const response = await api.put(`${pre}lockers/${lockerId}/schedules/${schenduleId}`,
+    console.log('cuerpo del put',payload)
+    const response = await api.put(`${pre}lockers/${lockerId}/schedules/${scheduleId}`,
       payload
     );
-    console.log("Put schedule response:", response.data);
+    return response.data;
+  }
+
+  export const deleteSchedule = async (
+    lockerId: number,
+    scheduleId: number,
+    deleteAllSchedules: boolean,
+  ): Promise<void> => {
+    const response = await api.delete(
+      `${pre}lockers/${lockerId}/schedules/delete`,
+      {
+        data: {
+          scheduleId,
+          deleteAllSchedules,
+        },
+      }
+    );
+    console.log("Delete schedule response:", response.data);
     return response.data;
   }

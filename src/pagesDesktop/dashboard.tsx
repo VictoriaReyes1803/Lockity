@@ -1,5 +1,7 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-
+import Toolbar from "../components/Toolbar";
+import { Toast } from "primereact/toast";
+import { useRef, useState, useEffect } from "react";
 const lockers = [
 	{ id: 82829, area: "Classroom 3", organization: "UTT" },
 	{ id: 82829, area: "Classroom 3", organization: "UTT" },
@@ -79,7 +81,22 @@ const attempts = [
 ];
 
 export default function Dashboard() {
+		const [organizationId, setOrganizationId] = useState<string>("");
+		const [page, setPage] = useState(0); 
+		const toast = useRef<Toast>(null);
 	return (
+		 <div className="flex h-screen bg-[#2e2d2d] text-white font-sans">
+      
+      <div className="flex-1 ml-[3.6rem]  w-full">
+        <Toolbar
+          title="Lockers"
+          showOrganizationSelect={true}
+          onChangeOrganization={(id) => {
+            setOrganizationId(id);
+            setPage(0);
+          }}
+        />
+        <Toast ref={toast} />
 		<div className="bg-[#2E2D2D] min-h-screen w-full text-black p-8 font-['Roboto']">
 			<div className="flex flex-col md:flex-row gap-6 mb-8">
 				<div className="bg-white rounded-xl p-4 flex-1 min-w-[400px]">
@@ -190,5 +207,8 @@ export default function Dashboard() {
 				</div>
 			</div>
 		</div>
+		</div>
+	  </div>
+	
 	);
 }
