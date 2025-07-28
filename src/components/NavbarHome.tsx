@@ -1,11 +1,15 @@
 // import { useLocation } from 'react-router-dom';
-import { generateCodeVerifier, generateCodeChallenge } from '../utils/pkce';
+const loadPkce = async () => {
+  const { generateCodeVerifier, generateCodeChallenge } = await import('../utils/pkce');
+  return { generateCodeVerifier, generateCodeChallenge };
+};
 
 const url = import.meta.env.VITE_BACKEND_URL;
 
 const isElectron = () => window.navigator.userAgent.includes("Electron");
 
 const handle = async () => {
+   const { generateCodeVerifier, generateCodeChallenge } = await loadPkce();
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = await generateCodeChallenge(codeVerifier);
   const state = crypto.randomUUID();
