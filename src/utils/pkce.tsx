@@ -1,4 +1,7 @@
 export function generateCodeVerifier(length = 127): string {
+   if (typeof window === 'undefined' || !window.crypto?.getRandomValues) {
+    throw new Error('Web Crypto API not available for getRandomValues.');
+  }
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
   let result = '';
   const values = new Uint8Array(length);
