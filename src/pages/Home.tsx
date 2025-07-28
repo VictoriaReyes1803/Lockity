@@ -35,9 +35,16 @@ export default function Home() {
       Advanced biometric technology to keep your belongings safe. Anytime. Anywhere.
     </p>
     <div className="space-x-4">
-      <button className="bg-[#FFD166] text-black px-6 py-2  font-semibold hover:bg-[#e2ba5d] transition">
-        Get Started
-      </button>
+      <button
+  onClick={() => {
+    const section = document.getElementById("contact");
+    section?.scrollIntoView({ behavior: "smooth" });
+  }}
+  className="bg-[#FFD166] text-black px-6 py-2 font-semibold hover:bg-[#e2ba5d] transition"
+>
+  Get Started
+</button>
+
       <button  className="bg-[#515355] text-white px-6 py-2  font-semibold hover:bg-[#444] transition ">
         Learn More
       </button>
@@ -132,7 +139,7 @@ export default function Home() {
 
 
 {/* Contact Form */}
-<section className="w-full px-6 md:px-24 py-[8rem] bg-[#2E2D2D]">
+<section id="contact"  className="w-full px-6 md:px-24 py-[8rem] bg-[#2E2D2D]">
   <h2 className="text-xl font-semibold mb-10 text-center">Contact Us!</h2>
   <div className="flex flex-col md:flex-row items-center justify-center gap-40">
     

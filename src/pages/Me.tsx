@@ -241,7 +241,7 @@ if (!emailRegex.test(form.email.trim())) {
               </>
             )}
             {role.role === "super_admin" && (
-              <div className="text-[#FFD166] mt-1">Access to all lockers and areas</div>
+              <div className="text-[#FFD166] mt-1">Access to all lockers and areas in app Web</div>
             )}
           </div>
         ));

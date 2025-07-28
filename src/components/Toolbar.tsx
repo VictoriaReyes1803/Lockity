@@ -27,6 +27,7 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
         if (showOrganizationSelect) {
 
           const storedOrganizations = sessionStorage.getItem("organizations");
+          console.log("Stored organizations:", storedOrganizations);
           const storedSelectedOrg = sessionStorage.getItem("selected_organization_id");
 
           if (storedOrganizations) {
@@ -51,7 +52,7 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
           else {
       
             const orgResponse = await getOrganization();
-
+              console.log("Organization response:", orgResponse);
             if (orgResponse.success) {
               setOrganizations(orgResponse.data.items);
               

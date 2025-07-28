@@ -1,15 +1,26 @@
 import type {  OrganizationResponse} from "../models/organization";
 import {getApi} from "./interceptor";
 const api = getApi("nest");
+
 const pre = 'api/';
+
+
+const isElectron = (): boolean => {
+  return typeof navigator === "object" && navigator.userAgent.toLowerCase().includes("electron");
+};
 
 
 
 export const getOrganization = async (): Promise<OrganizationResponse> => {
-    const response = await api.get(`${pre}organizations`);
+  const route = isElectron()
+  ? `${pre}organizations/admin`        // ← escritorio / Electron
+  : `${pre}organizations/super_admin`; // ← web
 
-    return response.data as OrganizationResponse;
-    }
+
+    console.log("Fetching organization from route:", route);
+  const response = await api.get(route);
+  return response.data as OrganizationResponse;
+};
     
 
     export const postOrganization = async (payload: {
