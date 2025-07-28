@@ -57,7 +57,14 @@ function NavbarHome() {
           <div className="flex-1 flex justify-center items-center space-x-10 text-sm font-semibold">
 
             <button
-              onClick={handle}
+  onClick={() => {
+    if (typeof window !== 'undefined' && window.crypto?.subtle) {
+      handle();
+    } else {
+      console.error("Web Crypto API no está disponible.");
+    }
+  }}
+
               className="space-x-10 text-sm font-semibold hover:underline underline-offset-4 transition"
             >
               Access
