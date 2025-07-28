@@ -1,14 +1,18 @@
 // import { useLocation } from 'react-router-dom';
 const loadPkce = async () => {
-  const { generateCodeVerifier, generateCodeChallenge } = await import('../utils/pkce');
-  return { generateCodeVerifier, generateCodeChallenge };
+  return await import('../utils/pkce');
 };
+
 
 const url = import.meta.env.VITE_BACKEND_URL;
 
 const isElectron = () => window.navigator.userAgent.includes("Electron");
 
 const handle = async () => {
+  if (typeof window === 'undefined' || !window.crypto?.subtle) {
+    console.error('Web Crypto API no disponible.');
+    return;
+  }
    const { generateCodeVerifier, generateCodeChallenge } = await loadPkce();
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = await generateCodeChallenge(codeVerifier);
