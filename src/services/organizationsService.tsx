@@ -40,12 +40,12 @@ export const putOrganization = async (payload: {
     name: string;
     description: string;
 }, organizationId: number)
-: Promise<any> => {
+: Promise<unknown> => {
     const response = await api.put(`${pre}organizations/${organizationId}`, payload);
     return response;
 }
 
-export const getAreas = async (organizationId: string): Promise<any> => {
+export const getAreas = async (organizationId: string): Promise<unknown> => {
     const response = await api.get(`${pre}organizations/${organizationId}/areas`);
     return response.data;
 }
@@ -53,7 +53,7 @@ export const getAreas = async (organizationId: string): Promise<any> => {
 export const putArea = async (payload: {
     name: string;
     description: string;
-}, areaId: number): Promise<any> => {
+}, areaId: number): Promise<unknown> => {
     const response = await api.put(`${pre}organizations/${areaId}/areas/`, payload);
     return response;
 }
@@ -62,7 +62,7 @@ export const postArea = async ( organization_id: number,payload: {
     name: string;
     description: string;
    
-}): Promise<any> => {
+}): Promise<unknown> => {
     const response = await api.post(`${pre}organizations/${organization_id}/areas`, payload);
     return response;
 }
