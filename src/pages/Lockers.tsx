@@ -1,19 +1,24 @@
 // src/pages/Lockers.tsx
 import Toolbar from "../components/Toolbar";
 import { Toast } from "primereact/toast";
+import { Paginator } from "primereact/paginator";
 import { useRef, useState, useEffect } from "react";
 import Loader from "../components/Loader";
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { confirmDialog } from 'primereact/confirmdialog';
-
+import {getEncryptedCookie} from '../lib/secureCookies';
 import { putlocker } from "../services/lockersService";
-import type { Locker, Schedule } from "../models/locker";
+import type { Locker} from "../models/locker";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { Compartment } from "../models/locker";
 import { getCompartments, deleteSchedule } from "../services/lockersService";
 import { getLockers , putSchedule} from "../services/lockersService"; 
 
 export default function Lockers() {
+
+const [rows, setRows] = useState(10); 
+const [totalRecords, setTotalRecords] = useState(0); 
+
   const toast = useRef<Toast>(null);
     const [organizationId, setOrganizationId] = useState<string>("");
     const [page, setPage] = useState(0); 
@@ -65,8 +70,8 @@ const removeSchedule = (index: number) => {
 
   useEffect(() => {
     setLoading(true);
-  const orgsRaw = sessionStorage.getItem("organizations");
-  const selectedOrg = sessionStorage.getItem("selected_organization_id");
+  const orgsRaw = getEncryptedCookie("o_ae3d8f2b");
+  const selectedOrg = getEncryptedCookie("s_12be90dd");
 
   if (orgsRaw && selectedOrg) {
     setOrganizationId(selectedOrg);
@@ -81,14 +86,16 @@ const removeSchedule = (index: number) => {
    useEffect(() => {
       if (!organizationId || organizationId === "") return;   
     fetchLockers();
-  }, [organizationId, page]);
+  }, [organizationId, page, rows, showSchedules]);
 
 
  const fetchLockers = async () => {
       try {
         setLoading(true);
-        const data = await getLockers(page + 1, 10, organizationId, showSchedules);
+        console.log("Fetching lockers for organization:", organizationId);
+        const data = await getLockers(page + 1, rows, organizationId, showSchedules);
         setLockers(data.data.items);
+        setTotalRecords(data.data.total);
         console.log("Lockers loaded:", data.data.items);
       } catch (err) {
         console.error("Error loading lockers:", err);
@@ -142,9 +149,24 @@ const removeSchedule = (index: number) => {
           />
         <div className="mt-6 bg-[#252525] rounded-xl p-6 overflow-x-auto ml-6 mr-2">
           <div className="flex justify-between items-center mb-4">
-            <button className="bg-[#555555] text-white px-4 py-1 rounded-full font-semibold hover:brightness-90 transition">
-              View Logs
-            </button>
+          <div className="flex justify-between items-center mb-4">
+  <Paginator
+    first={page * rows}
+    rows={rows}
+    totalRecords={totalRecords}
+    rowsPerPageOptions={[5, 10, 50]}
+    onPageChange={(e) => {
+      setPage(e.page);
+      setRows(e.rows);
+    }}
+    className="bg-[#252525] text-white border-none text-sm px-[0px] py-[0px]"
+    template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} lockers"
+  />
+
+</div>
+
+
             <div className="flex items-center gap-2 text-lg font-semibold">
               Add Locker
               <img
@@ -163,8 +185,8 @@ const removeSchedule = (index: number) => {
                 setScheduleDate("");
                 setRepeatSchedule(false);
 
-                const orgId = sessionStorage.getItem("selected_organization_id");
-                const orgsRaw = sessionStorage.getItem("organizations");
+                const orgId = getEncryptedCookie("s_12be90dd");
+                const orgsRaw = getEncryptedCookie("o_ae3d8f2b");
 
                 if (orgId && orgsRaw) {
                 const orgs = JSON.parse(orgsRaw);
@@ -298,8 +320,8 @@ const removeSchedule = (index: number) => {
                             setSelectedLockerToUpdate(locker);
                             setSerialNumber(locker.locker_serial_number.toString()); 
                             setSelectedAreaId(locker.area_id);
-                            const orgId = sessionStorage.getItem("selected_organization_id");
-                            const orgsRaw = sessionStorage.getItem("organizations");
+                            const orgId = getEncryptedCookie("s_12be90dd");
+                            const orgsRaw = getEncryptedCookie("o_ae3d8f2b");
 
                             if (orgId && orgsRaw) {
                               const orgs = JSON.parse(orgsRaw);
@@ -346,7 +368,7 @@ const removeSchedule = (index: number) => {
                     )}
                     {compartments.map((compartment) => (
                     <div
-                        key={compartment.id}
+                        key={compartment.compartment_id}
                         className="flex justify-between items-center border-b border-gray-500 py-1"
                     >
                         <div>

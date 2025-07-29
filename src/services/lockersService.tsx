@@ -9,13 +9,13 @@ const pre = 'api/';
 export const getLockers = async (
   page: number,
   limit: number,
-  organization_id: string,
+  organizationId: string,
   showSchedules?: boolean
 ): Promise<LockerListResponse> => {
     const params: any = {
       page,
       limit,
-      organization_id,
+      organizationId,
     };
     if (showSchedules) {
       params.showSchedules = true;
@@ -118,3 +118,7 @@ export const getCompartments = async (
     console.log("Delete schedule response:", response.data);
     return response.data;
   }
+export const getlockersforArea = async (areaId: number): Promise<any> => {
+    const response = await api.get(`${pre}lockers/${areaId}`);
+    return response.data;
+}

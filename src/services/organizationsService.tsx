@@ -13,8 +13,8 @@ const isElectron = (): boolean => {
 
 export const getOrganization = async (): Promise<OrganizationResponse> => {
   const route = isElectron()
-  ? `${pre}organizations/admin`        // ← escritorio / Electron
-  : `${pre}organizations/super_admin`; // ← web
+  ? `${pre}organizations/admin`        
+  : `${pre}organizations/super_admin`; 
 
 
     console.log("Fetching organization from route:", route);
@@ -66,3 +66,4 @@ export const postArea = async ( organization_id: number,payload: {
     const response = await api.post(`${pre}organizations/${organization_id}/areas`, payload);
     return response;
 }
+

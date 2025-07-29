@@ -1,6 +1,11 @@
 import { useEffect, useState} from 'react';
 import Loader from "../components/Loader";
+import { getEncryptedCookie, setEncryptedCookie } from '../lib/secureCookies';
+import Cookies from 'js-cookie';
 
+const isElectron = () => {
+  return typeof window !== 'undefined' && window.navigator.userAgent.includes('Electron');
+};
 
 const Callback = () => {
   const [loading, setLoading] = useState(true);
@@ -9,8 +14,8 @@ const Callback = () => {
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
       const state = params.get('state');
-      const storedState = localStorage.getItem('oauth_state');
-      const codeVerifier = localStorage.getItem('pkce_code_verifier');
+      const storedState = getEncryptedCookie('oauth_state');
+      const codeVerifier = getEncryptedCookie('pkce_code_verifier');
 
       console.log('state in URL:', state);
       console.log('storedState:', storedState);
@@ -32,6 +37,8 @@ const Callback = () => {
         redirect_uri: import.meta.env.VITE_REDIRECT_URI,
         code,
         code_verifier: codeVerifier,
+        device: isElectron() ? 'desktop' : 'web',
+
       });
 console.log('Exchanging code for token with body:', body.toString());
       try {
@@ -46,9 +53,10 @@ console.log('Exchanging code for token with body:', body.toString());
         const data = await response.json();
 
         if (data.access_token) {
-          localStorage.setItem('access_token', data.access_token);
           console.log('Token received:', data.access_token);
-          localStorage.removeItem('oauth_state');
+          setEncryptedCookie('access_token', data.access_token);
+          console.log('Token received:', data.access_token);
+          Cookies.remove('oauth_state');
 
           window.location.href = '/me'; 
         } else {

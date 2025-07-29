@@ -1,6 +1,6 @@
 // import { useLocation } from 'react-router-dom';
 import { generateCodeVerifier, generateCodeChallenge } from '../utils/pkce';
-
+import { setEncryptedCookie } from '../lib/secureCookies';
 const url = import.meta.env.VITE_BACKEND_URL;
 
 const isElectron = () => window.navigator.userAgent.includes("Electron");
@@ -9,10 +9,10 @@ const handle = async () => {
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = await generateCodeChallenge(codeVerifier);
   const state = crypto.randomUUID();
-  localStorage.setItem('oauth_state', state);
+  setEncryptedCookie('oauth_state', state);
 
-  localStorage.setItem('pkce_code_verifier', codeVerifier);
-  localStorage.setItem('oauth_state', state);
+  setEncryptedCookie('pkce_code_verifier', codeVerifier);
+  setEncryptedCookie('oauth_state', state);
 
   const clientId = import.meta.env.VITE_CLIENT_ID;
   const redirectUri = import.meta.env.VITE_REDIRECT_URI;
