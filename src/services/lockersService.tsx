@@ -122,3 +122,20 @@ export const getlockersforArea = async (areaId: number): Promise<any> => {
     const response = await api.get(`${pre}lockers/${areaId}`);
     return response.data;
 }
+
+export const openLocker = async (
+  serialNumber: string,
+  compartmentNumber: number,
+  status: boolean
+): Promise<void> => {
+  const response = await api.put(`${pre}locker/${serialNumber}/${compartmentNumber}/${status}`, );
+  return response.data;
+}
+export const statusLocker = async (
+  serialNumber: string,
+  compartmentNumber: number,
+  status: boolean
+): Promise<void> => {
+  const response = await api.get(`${pre}locker/${serialNumber}/${compartmentNumber}/${status}`, );
+  return response.data;
+}

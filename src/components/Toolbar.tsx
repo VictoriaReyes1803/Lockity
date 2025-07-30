@@ -82,6 +82,13 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
         }
       } catch (err) {
         console.error("Failed to load data:", err);
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: "Failed to load user data.",
+          life: 3000,
+        });
+        
       }
     };
 

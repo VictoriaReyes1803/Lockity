@@ -30,16 +30,15 @@ const Callback = () => {
         setLoading(false);
         return;
       }
-
+      
       const body = new URLSearchParams({
         grant_type: 'authorization_code',
         client_id: import.meta.env.VITE_CLIENT_ID,
         redirect_uri: import.meta.env.VITE_REDIRECT_URI,
         code,
         code_verifier: codeVerifier,
-        device: isElectron() ? 'desktop' : 'web',
-
       });
+      console.log('code:', body);
 console.log('Exchanging code for token with body:', body.toString());
       try {
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}oauth/token`, {

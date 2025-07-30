@@ -78,7 +78,15 @@ const removeSchedule = (index: number) => {
     
     setLoading(false);
   }
-
+else {
+    
+    toast.current?.show({
+      severity: "error",
+     summary: "Error",
+     detail: "Error loading organization data, please.",
+      life: 3000,
+    });
+  }
 
 }, []);
 

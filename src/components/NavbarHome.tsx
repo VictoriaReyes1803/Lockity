@@ -25,6 +25,8 @@ const handle = async () => {
     state,
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
+    device: isElectron() ? 'desktop' : 'web',
+
   });
 
   window.location.href = `${url}oauth/authorize?${queryParams.toString()}`;
