@@ -13,6 +13,7 @@ import HomeDesktop from './pagesDesktop/home';
 import Lockers from './pages/Lockers';
 import Logs from './pages/Logs';
 
+
 import Dashboard from './pagesDesktop/dashboard'; 
 const isElectron = () => window.navigator.userAgent.includes("Electron");
 

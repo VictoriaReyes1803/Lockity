@@ -13,7 +13,7 @@ import type { Locker} from "../models/locker";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { Compartment } from "../models/locker";
 import { getCompartments, deleteSchedule } from "../services/lockersService";
-import { getLockers , putSchedule, openLocker} from "../services/lockersService"; 
+import { getLockers , putSchedule} from "../services/lockersService"; 
 
 
 
@@ -121,6 +121,18 @@ else {
       }
     };
 
+useEffect(() => {
+  const handleEsc = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setShowModal(false);
+    }
+  };
+
+  window.addEventListener("keydown", handleEsc);
+  return () => {
+    window.removeEventListener("keydown", handleEsc);
+  };
+}, []);
 
   const fetchCompartments = async (lockerId: number) => {
   try {
@@ -423,6 +435,12 @@ else {
             );
 
         await fetchCompartments(selectedLocker!.locker_id);
+        toast.current?.show({
+          severity: "success",
+          summary: "Compartment Opened",
+          detail: `Compartment ${compartment.compartment_number} opened successfully`,
+          life: 3000,
+        });
         }
        
       } catch (err) {

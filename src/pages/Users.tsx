@@ -193,6 +193,27 @@ const fetchCompartments = async (lockerId: number) => {
 
 
 
+useEffect(() => {
+  const handleEsc = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setShowModal(false);
+      setShowRemoveModal(false);
+      setSelectedUser(null);  
+      setSelectedRoleIndex(null);
+      setNewEmail("");
+      setSelectedLocker(null);
+      setSelectedCompartment(null); 
+
+      setAvailableCompartments([]);
+      setAvailableLockers([]);
+    }
+  };
+
+  window.addEventListener("keydown", handleEsc);
+  return () => {
+    window.removeEventListener("keydown", handleEsc);
+  };
+}, []);
 
 
 
@@ -445,7 +466,7 @@ const fetchCompartments = async (lockerId: number) => {
         >
           <option value="user">User</option>
           <option value="admin">Admin</option>
-          <option value="super_admin">Super Admin</option>
+
         </select>
       </div>
       <div className="mb-2">

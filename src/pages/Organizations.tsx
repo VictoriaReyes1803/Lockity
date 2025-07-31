@@ -90,6 +90,27 @@ const fetchAreas = async () => {
 
 
  
+useEffect(() => {
+  const handleEsc = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setShowAreaModal(false);
+      setShowOrgModal(false);
+      setEditingArea(null);
+      setEditingOrg(null);
+      setOrgName("");
+      setOrgDescription("");
+      setAreaName("");
+      setAreaDescription("");
+      setLockerSerial("");
+      setOrganizationId("");
+    }
+  };
+
+  window.addEventListener("keydown", handleEsc);
+  return () => {
+    window.removeEventListener("keydown", handleEsc);
+  };
+}, []);
 
 
   return (
@@ -104,9 +125,9 @@ const fetchAreas = async () => {
 
         <div className="mt-6 bg-[#252525] rounded-xl p-6 overflow-x-auto ml-6 mr-2">
           <div className="flex justify-between items-center mb-4">
-            <button className="bg-[#555555] text-white px-4 py-1 rounded-full font-semibold hover:brightness-90 transition">
+            {/* <button className="bg-[#555555] text-white px-4 py-1 rounded-full font-semibold hover:brightness-90 transition">
               View Logs
-            </button>
+            </button> */}
             <div className="flex items-center gap-2 text-lg font-semibold">
               Add Organization
              <img

@@ -216,6 +216,7 @@ useEffect(() => {
         <Dialog
           header="Wi-Fi Configuration Reminder"
           visible={showWifiModal}
+          closeOnEscape={true}
           style={{ width: '30vw', background: '#2e2d2d' }}
           contentStyle={{ background: '#2e2d2d', color: 'white' }}
           headerStyle={{ background: '#2e2d2d', color: 'white' }}

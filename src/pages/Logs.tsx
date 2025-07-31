@@ -3,37 +3,44 @@ import Toolbar from "../components/Toolbar";
 import { Toast } from "primereact/toast";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+
+import { Paginator } from "primereact/paginator";
 import type { Area } from "../models/organization";
 import { getAreas } from "../services/organizationsService";
 import { getlockersforArea, getCompartments } from "../services/lockersService";
 import { useEffect } from "react";
 import type { User } from "../models/User";
 import type { Locker } from "../models/locker";
-
+import { accesslogs, auditLogs } from "../services/logsService"; 
+import { supabase } from "../lib/supabaseClient";
 
  export default function Logs() {
 const [areas, setAreas] = useState<Area[]>([]); 
 const [lockers, setLockers] = useState<Locker[]>([]);
 const [compartments, setCompartments] = useState<any[]>([]); 
-const [logs, setLogs] = useState<any[]>([]);
+const [filterEmail, setFilterEmail] = useState("");
+const [filterAction, setFilterAction] = useState("");
+const [filterDateFrom, setFilterDateFrom] = useState("");
+const [filterDateTo, setFilterDateTo] = useState("");
+
 const [history, setHistory] = useState<any[]>([]);
 const [organizationId, setOrganizationId] = useState<string>("");
     const [page, setPage] = useState(0); 
     const [selectedOrg, setSelectedOrg] = useState("UTT");
   const [selectedArea, setSelectedArea] = useState("Classroom 3");
-  const [selectedLocker, setSelectedLocker] = useState("ASGDF2");
+  const [selectedLocker, setSelectedLocker] = useState("SN-2025-0745-AX93-PLQ7");
   const [selectedCompartment, setSelectedCompartment] = useState("22");
-// Cargar logs
-       const logData = [
-    { user: "Vicky", locker: "3333", description: "Lorem ipsum dolor sit amet...", time: "10/9/25 4:00 am", target: "Alonso" },
-    { user: "Marco", locker: "22222", description: "Lorem ipsum dolor sit amet...", time: "10/9/25 4:00 am", target: "Arturo" },
-    { user: "Alonso", locker: "55555", description: "Lorem ipsum dolor sit amet...", time: "10/9/25 4:00 am", target: "Bocher" },
-  ];
-const historyData = [
-    { user: "Vicky", source: "Locker 3333", action: "Opened compartment 1", time: "10/9/25 4:00 am", photo: "https://example.com/photo1.jpg" },
-    { user: "Marco", source: "Locker 22222", action: "Closed compartment 2", time: "10/9/25 4:00 am", photo: "https://example.com/photo2.jpg" },
-    { user: "Alonso", source: "Locker 55555", action: "Opened compartment 3", time: "10/9/25 4:00 am", photo: "https://example.com/photo3.jpg" },
-  ];
+const [logs, setLogs] = useState<any[]>([]);
+const [totalRecords, setTotalRecords] = useState(0);
+const [totalRecordsAudit, setTotalRecordsAudit] = useState(0);
+const [auditLogsData, setAuditLogsData] = useState<any[]>([]);
+const [rows, setRows] = useState(10); 
+const [imageUrl, setImageUrl] = useState<string | null>(null);
+const [showImageModal, setShowImageModal] = useState(false);
+
+const [rowsaudit, setRowsAudit] = useState(5);
+const [pageAudit, setPageAudit] = useState(0);
+
 
   useEffect(() => {
   if (!organizationId) return;
@@ -48,6 +55,7 @@ const historyData = [
       setSelectedArea(firstArea.id.toString());
 
       const lockerRes = await getlockersforArea( firstArea.id);
+      console.log("Lockers for area fetched:", lockerRes.data);
       const lockerItems = lockerRes.data.items;
       console.log("Lockers fetched:", lockerItems);
       setLockers(lockerItems);
@@ -57,15 +65,17 @@ const historyData = [
       const areaLockers: Locker[] = lockerItems.filter((l: Locker) => l.area_id === firstArea.id);
       const firstLocker = areaLockers[0];
       setSelectedLocker(firstLocker?.locker_serial_number);
+      
+      // fetchLogs();
 
       const comps = await getCompartments(firstLocker.locker_id);
       setCompartments(comps.data.items || []);
       console.log("Compartments fetched:", comps.data.items);
       setSelectedCompartment(comps.data.items[0]?.compartment_number?.toString() || "");
 
-      
-      setLogs(logData);
-      setHistory(logData);
+    
+      // setLogs(data.data.items || []);
+      // setAuditLogsData(dataAudit.data || []);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -73,6 +83,51 @@ const historyData = [
 
   fetchAreasAndLockers();
 }, [organizationId]);
+
+const fetchLogs = async () => {
+  if (!selectedLocker) return;
+  const data = await accesslogs(
+    selectedLocker,
+    page + 1,
+    rows,
+    selectedCompartment ? parseInt(selectedCompartment) : undefined,
+    filterEmail || undefined,
+    filterAction || undefined,
+    filterDateFrom || undefined,
+    filterDateTo || undefined
+  );
+  const dataAudit = await auditLogs(
+    pageAudit + 1,
+    rowsaudit,
+    selectedLocker,
+    filterEmail || undefined,
+    filterDateFrom || undefined,
+    filterDateTo || undefined
+  );
+  setLogs(data.data.items || []);
+  setAuditLogsData(dataAudit.data.items || []);
+  setTotalRecords(data.data.total || 0);
+  setTotalRecordsAudit(dataAudit.data.total || 0);
+};
+const generateSignedUrl = async (path: string) => {
+  const { data, error } = await supabase.storage
+    .from("lockity-images")
+    .createSignedUrl(path, 60 * 2); // 2 minutos
+
+  if (error) {
+    console.error("Error generating signed URL:", error.message);
+    return;
+  }
+
+  setImageUrl(data.signedUrl);
+  setShowImageModal(true);
+};
+
+
+useEffect(() => {
+  fetchLogs();
+}, [selectedLocker, selectedCompartment, page, rows]);
+
 
  return (
     <div className="flex h-screen bg-[#2e2d2d] text-white font-sans">
@@ -168,7 +223,73 @@ const historyData = [
       );
     })}
   </select>
+
+  
 </div>
+<div className="flex flex-wrap gap-4">
+  <div>
+    <label className="block text-sm font-semibold">Email</label>
+    <input
+      type="text"
+      className="bg-[#3b3b3b] rounded px-2 py-1"
+      value={filterEmail}
+      onChange={(e) => setFilterEmail(e.target.value)}
+      placeholder="example@email.com"
+    />
+  </div>
+  <div>
+    <label className="block text-sm font-semibold">Action</label>
+    {/* <input
+      type="text"
+      className="bg-[#3b3b3b] rounded px-2 py-1"
+      value={filterAction}
+      onChange={(e) => setFilterAction(e.target.value)}
+      placeholder="opening/closing/failed_attempt"
+    /> */}
+    <select
+      className="bg-[#3b3b3b] rounded px-2 py-1"
+      value={filterAction}
+      onChange={(e) => setFilterAction(e.target.value)}
+    >
+      <option value="">All Actions</option>
+      <option value="opening">Opening</option>
+      <option value="closing">Closing</option>
+      <option value="failed_attempt">Failed Attempt</option>
+      </select>
+
+  </div>
+  <div>
+    <label className="block text-sm font-semibold">From</label>
+    <input
+      type="date"
+      className="bg-[#3b3b3b] rounded px-2 py-1"
+      value={filterDateFrom}
+      onChange={(e) => setFilterDateFrom(e.target.value)}
+    />
+  </div>
+  <div>
+    <label className="block text-sm font-semibold">To</label>
+    <input
+      type="date"
+      className="bg-[#3b3b3b] rounded px-2 py-1"
+      value={filterDateTo}
+      onChange={(e) => setFilterDateTo(e.target.value)}
+    />
+  </div>
+  <div className="flex items-end">
+    <button
+      className="bg-[#FFD166] text-black px-4 py-1 rounded-full font-semibold hover:brightness-90 transition"
+      onClick={() => {
+        setPage(0);
+        setPageAudit(0);
+        fetchLogs();
+      }}
+    >
+      Apply Filters
+    </button>
+  </div>
+</div>
+
 
       </div>
 
@@ -179,56 +300,107 @@ const historyData = [
             <thead>
               <tr className="text-left border-b border-gray-700">
                 <th className="pb-2">Performed by</th>
-                <th>Locker</th>
+                
                 <th>Description</th>
                 <th>Time</th>
                 <th>Target user</th>
               </tr>
             </thead>
             <tbody>
-              {logData.map((log, idx) => (
-                <tr key={idx} className="border-b border-gray-700">
-                  <td className="py-2">{log.user}</td>
-                  <td>{log.locker}</td>
+              {auditLogsData.map((log, id) => (
+                <tr key={id} className="border-b border-gray-700">
+                  <td className="py-2">{log.performed_by.full_name}</td>
+                 
                   <td>{log.description}</td>
-                  <td>{log.time}</td>
-                  <td>{log.target}</td>
+                 <td>{new Date(log.timestamp).toLocaleString("es-MX", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false
+                    })}</td>
+
+                  <td>{log.target_user.full_name}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className="text-xs text-right mt-2 text-gray-400">Page 3 / 5</div>
+             <Paginator
+  first={pageAudit * rowsaudit}
+  rows={rowsaudit}
+  totalRecords={totalRecordsAudit}
+  rowsPerPageOptions={[5, 10, 50]}
+  onPageChange={(e) => {
+    setPageAudit(e.page);
+    setRowsAudit(e.rows);
+    setRows(e.rows);
+  }}
+  className="bg-[#252525] text-white border-none text-sm px-[0px] py-[0px]"
+  template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
+  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} logs"
+/>
+
         </div>
 
-        {/* History Table */}
+        {/* access logs Table */}
         <div className="bg-[#1f1f1f] rounded-xl p-4 flex-1 shadow-lg">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left border-b border-gray-700">
                 <th>User</th>
+                <th>User role</th>
                 <th>Source</th>
+
                 <th>Action</th>
                 <th>Time</th>
                 <th>Photo</th>
               </tr>
             </thead>
             <tbody>
-              {historyData.map((row, idx) => (
+              {logs.map((row, idx) => (
                 <tr key={idx} className="border-b border-gray-700">
-                  <td className="py-2">{row.user}</td>
+                  <td className="py-2">{row.performed_by.full_name}</td>
+                  <td>{row.performed_by.role}</td>
+
                   <td>{row.source}</td>
                   <td>{row.action}</td>
-                  <td>{row.time}</td>
-                  <td>
-                    <button className="bg-[#3b3b3b] p-2 rounded-full">
-                      <i className="pi pi-camera text-white" />
-                    </button>
-                  </td>
+                  <td>{new Date(row.timestamp).toLocaleString("es-MX", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false
+                  })}</td>
+
+                <td>
+                <button
+                  className="bg-[#3b3b3b] p-2 rounded-full"
+                  onClick={() => generateSignedUrl(row.photo_path)}
+                >
+                  <i className="pi pi-camera text-white" />
+                </button>
+              </td>
+
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className="text-xs text-right mt-2 text-gray-400">Page 3 / 5</div>
+          <Paginator
+  first={page * rows}
+  rows={rows}
+  totalRecords={totalRecords}
+  rowsPerPageOptions={[5, 10, 50]}
+  onPageChange={(e) => {
+    setPage(e.page);
+    setRows(e.rows);
+  }}
+  className="bg-[#252525] text-white border-none text-sm px-[0px] py-[0px]"
+  template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
+  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} logs"
+/>
+
         </div>
       </div>
     </div>
@@ -236,6 +408,23 @@ const historyData = [
       
 
 </div>
+
+{showImageModal && imageUrl && (
+  <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+    <div className="bg-[#1f1f1f] p-4 rounded-lg shadow-lg">
+      <img src={imageUrl} alt="Captured" className="max-w-[80vw] max-h-[80vh]" />
+      <div className="flex justify-end mt-4">
+        <button
+          className="bg-[#FFD166] text-black px-4 py-1 rounded-full font-semibold"
+          onClick={() => setShowImageModal(false)}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 </div>
   );
 }

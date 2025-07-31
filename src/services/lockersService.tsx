@@ -1,10 +1,14 @@
 
 // src/services/lockersService.ts
+import type { act } from "react";
 import type { LockerListResponse , ListCompartmentsResponse} from "../models/locker";
 //import type { OrganizationResponse } from "../models/organization";
 import {getApi} from "./interceptor";
 const api = getApi("nest");
 const pre = 'api/';
+const isElectron = (): boolean => {
+  return typeof navigator === "object" && navigator.userAgent.toLowerCase().includes("electron");
+};
 
 export const getLockers = async (
   page: number,
@@ -20,7 +24,11 @@ export const getLockers = async (
     if (showSchedules) {
       params.showSchedules = true;
     }
-    const response = await api.get(`${pre}lockers`, { params });
+     const route = isElectron()
+  ? `${pre}lockers/admin`        
+  : `${pre}lockers/super_admin`; 
+
+    const response = await api.get(route, { params });
     console.log("Locker response:", response.data);
     return response.data;
 };
@@ -119,18 +127,16 @@ export const getCompartments = async (
     return response.data;
   }
 export const getlockersforArea = async (areaId: number): Promise<any> => {
-    const response = await api.get(`${pre}lockers/${areaId}`);
+    const route = isElectron()
+  ? `${pre}lockers/${areaId}/admin`        
+  : `${pre}lockers/${areaId}/super_admin`; 
+
+    const response = await api.get(route);
+    console.log(areaId)
     return response.data;
 }
 
-export const openLocker = async (
-  serialNumber: string,
-  compartmentNumber: number,
-  status: boolean
-): Promise<void> => {
-  const response = await api.put(`${pre}locker/${serialNumber}/${compartmentNumber}/${status}`, );
-  return response.data;
-}
+
 export const statusLocker = async (
   serialNumber: string,
   compartmentNumber: number,
@@ -139,3 +145,5 @@ export const statusLocker = async (
   const response = await api.get(`${pre}locker/${serialNumber}/${compartmentNumber}/${status}`, );
   return response.data;
 }
+
+
