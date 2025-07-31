@@ -2,7 +2,7 @@
 import Toolbar from "../components/Toolbar";
 import { Toast } from "primereact/toast";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { use, useState } from "react";
 
 import { Paginator } from "primereact/paginator";
 import type { Area } from "../models/organization";
@@ -84,8 +84,10 @@ const [pageAudit, setPageAudit] = useState(0);
   fetchAreasAndLockers();
 }, [organizationId]);
 
-const fetchLogs = async () => {
-  if (!selectedLocker) return;
+
+
+const accessLogsM = async () => {
+  if (!selectedLocker || !selectedCompartment) return;
   const data = await accesslogs(
     selectedLocker,
     page + 1,
@@ -96,7 +98,15 @@ const fetchLogs = async () => {
     filterDateFrom || undefined,
     filterDateTo || undefined
   );
-  const dataAudit = await auditLogs(
+   setLogs(data.data.items || []);
+  setTotalRecords(data.data.total || 0);
+ 
+};
+
+
+const fetchLogs = async () => {
+  if (!selectedLocker || !selectedCompartment) return;
+ const dataAudit = await auditLogs(
     pageAudit + 1,
     rowsaudit,
     selectedLocker,
@@ -104,15 +114,19 @@ const fetchLogs = async () => {
     filterDateFrom || undefined,
     filterDateTo || undefined
   );
-  setLogs(data.data.items || []);
-  setAuditLogsData(dataAudit.data.items || []);
-  setTotalRecords(data.data.total || 0);
-  setTotalRecordsAudit(dataAudit.data.total || 0);
+    accessLogsM();
+ 
+   setAuditLogsData(dataAudit.data.items || []);
+    setTotalRecordsAudit(dataAudit.data.total || 0);
+
+ 
 };
+
+
 const generateSignedUrl = async (path: string) => {
   const { data, error } = await supabase.storage
     .from("lockity-images")
-    .createSignedUrl(path, 60 * 2); // 2 minutos
+    .createSignedUrl(path, 60 * 2); 
 
   if (error) {
     console.error("Error generating signed URL:", error.message);
@@ -126,7 +140,11 @@ const generateSignedUrl = async (path: string) => {
 
 useEffect(() => {
   fetchLogs();
-}, [selectedLocker, selectedCompartment, page, rows]);
+}, [selectedLocker, selectedCompartment, page, rows, filterDateFrom,filterDateTo]);
+
+useEffect(() => {
+  accessLogsM();
+},[filterAction]);
 
 
  return (
@@ -227,25 +245,10 @@ useEffect(() => {
   
 </div>
 <div className="flex flex-wrap gap-4">
-  <div>
-    <label className="block text-sm font-semibold">Email</label>
-    <input
-      type="text"
-      className="bg-[#3b3b3b] rounded px-2 py-1"
-      value={filterEmail}
-      onChange={(e) => setFilterEmail(e.target.value)}
-      placeholder="example@email.com"
-    />
-  </div>
+ 
   <div>
     <label className="block text-sm font-semibold">Action</label>
-    {/* <input
-      type="text"
-      className="bg-[#3b3b3b] rounded px-2 py-1"
-      value={filterAction}
-      onChange={(e) => setFilterAction(e.target.value)}
-      placeholder="opening/closing/failed_attempt"
-    /> */}
+ 
     <select
       className="bg-[#3b3b3b] rounded px-2 py-1"
       value={filterAction}
@@ -274,6 +277,16 @@ useEffect(() => {
       className="bg-[#3b3b3b] rounded px-2 py-1"
       value={filterDateTo}
       onChange={(e) => setFilterDateTo(e.target.value)}
+    />
+  </div>
+   <div>
+    <label className="block text-sm font-semibold">Email</label>
+    <input
+      type="text"
+      className="bg-[#3b3b3b] rounded px-2 py-1"
+      value={filterEmail}
+      onChange={(e) => setFilterEmail(e.target.value)}
+      placeholder="example@email.com"
     />
   </div>
   <div className="flex items-end">
@@ -349,9 +362,10 @@ useEffect(() => {
             <thead>
               <tr className="text-left border-b border-gray-700">
                 <th>User</th>
+                <th>Email</th>
                 <th>User role</th>
                 <th>Source</th>
-
+            
                 <th>Action</th>
                 <th>Time</th>
                 <th>Photo</th>
@@ -361,8 +375,9 @@ useEffect(() => {
               {logs.map((row, idx) => (
                 <tr key={idx} className="border-b border-gray-700">
                   <td className="py-2">{row.performed_by.full_name}</td>
-                  <td>{row.performed_by.role}</td>
-
+                  <td>{row.performed_by.email}</td>
+                  <td className="py-2 px-2">{row.performed_by.role}</td>
+          
                   <td>{row.source}</td>
                   <td>{row.action}</td>
                   <td>{new Date(row.timestamp).toLocaleString("es-MX", {

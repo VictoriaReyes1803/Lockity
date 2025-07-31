@@ -82,15 +82,15 @@ const removeSchedule = (index: number) => {
     
     setLoading(false);
   }
-else {
+// else {
     
-    toast.current?.show({
-      severity: "error",
-     summary: "Error",
-     detail: "Error loading organization data, please.",
-      life: 3000,
-    });
-  }
+//     toast.current?.show({
+//       severity: "error",
+//      summary: "Error",
+//      detail: "Error loading organization data, please.",
+//       life: 3000,
+//     });
+//   }
 
 }, []);
 

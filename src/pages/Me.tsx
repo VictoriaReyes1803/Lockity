@@ -26,6 +26,7 @@ export default function UserInformation() {
       setLoading(true);
       try {
         const user = await Me();
+        console.log("User data:", user.data);
         if (user?.data) {
   setForm(user.data);
 }

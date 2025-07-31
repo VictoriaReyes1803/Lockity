@@ -7,6 +7,8 @@ import Loader from "../components/Loader";
   import { useEffect } from "react";
   import { haslocker } from "../services/authService";
   import { useNavigate } from "react-router-dom";
+  import { getEncryptedCookie } from "../lib/secureCookies";
+  
 
 export default function CreateOrganization() {
   const [organization, setOrganization] = useState("");
@@ -27,7 +29,39 @@ useEffect(() => {
       console.log("checkLocker on welcome page:", result);
       setLoading(false);
       if (result) {
+
+         if (typeof window !== "undefined" && !window.navigator.userAgent.includes("Electron")) {
+        
+                  const userRaw = getEncryptedCookie("u_7f2a1e3c");
+                  console.log("User cookie:", userRaw);
+                  if (userRaw) {
+                    try {
+                      const user = JSON.parse(userRaw);
+        
+                      const isSuperAdmin = Array.isArray(user.roles) &&
+                        user.roles.some((r: any) => r.role === "super_admin");
+        
+                      if (!isSuperAdmin) {
+                        // navigate("/welcome", { replace: true });
+                        return;
+                      }
+        
+            } catch (error) {
+              console.error("Invalid user cookie format", error);
+              // navigate("/welcome", { replace: true });
+              return;
+            }
+        
+            
+          } else {
+            // navigate("/welcome", { replace: true });
+            return;
+          }
+        } else {
+
         navigate("/lockers", { replace: true });
+        }
+
       }
     } catch (error) {
       console.error("Error checking locker on welcome:", error);
