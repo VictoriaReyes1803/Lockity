@@ -35,6 +35,7 @@ const handle = async () => {
     state,
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
+    device: 'desktop',
   });
 
   window.location.href = `${url}oauth/authorize?${queryParams.toString()}`;

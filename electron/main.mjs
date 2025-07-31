@@ -1,13 +1,24 @@
-const { app, BrowserWindow } = require("electron");
-const path = require("path");
+import { app, BrowserWindow } from "electron";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const preloadPath = join(__dirname, "preload.cjs");
 
 function createWindow() {
+  console.log("🧪 PRELOAD PATH:", preloadPath);
+
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
-    icon: path.join(__dirname, "images", "logosin.png"),
+    icon: join(__dirname, "images", "logosin.png"),
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: preloadPath,
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false,
     },
   });
 

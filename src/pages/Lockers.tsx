@@ -1,6 +1,7 @@
 // src/pages/Lockers.tsx
 import Toolbar from "../components/Toolbar";
 import { Toast } from "primereact/toast";
+
 import { Paginator } from "primereact/paginator";
 import { useRef, useState, useEffect } from "react";
 import Loader from "../components/Loader";
@@ -12,9 +13,12 @@ import type { Locker} from "../models/locker";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { Compartment } from "../models/locker";
 import { getCompartments, deleteSchedule } from "../services/lockersService";
-import { getLockers , putSchedule} from "../services/lockersService"; 
+import { getLockers , putSchedule, openLocker} from "../services/lockersService"; 
+
+
 
 export default function Lockers() {
+const isElectron = typeof window !== "undefined" && window.navigator.userAgent.includes("Electron");
 
 const [rows, setRows] = useState(10); 
 const [totalRecords, setTotalRecords] = useState(0); 
@@ -394,18 +398,58 @@ else {
                                 : "Unknown"}
                             </div>
                             </div>
-                        <span
-                        className={`
-                            text-xs font-bold px-3 py-1 rounded-full
-                            ${
-                            compartment.status.toLowerCase() === "open"
-                                ? "bg-[#41b883] text-white"
-                                : "bg-gray-500 text-white"
-                            }
-                        `}
-                        >
-                        {compartment.status.toUpperCase()}
-                        </span>
+                       <span
+  onClick={async () => {
+    if (compartment.status.toLowerCase() === "closed") {
+      try {
+        const user = getEncryptedCookie("u_7f2a1e3c");
+        const userId = user ? JSON.parse(user).id : null;
+        if (!userId) {
+          toast.current?.show({
+            severity: "warn",
+            summary: "User ID missing",
+            detail: "No user linked to this compartment",
+            life: 3000,
+          });
+          return;
+        }
+         const isElectron = typeof window !== "undefined" && window.navigator.userAgent.includes("Electron");
+        if (isElectron && window.electronAPI?.publishToggleCommand) {
+        console.log(selectedLocker!.locker_serial_number, userId, compartment.id, compartment.compartment_number);
+        window.electronAPI?.publishToggleCommand(
+              selectedLocker!.locker_serial_number,
+              userId,
+              compartment.id
+            );
+
+        await fetchCompartments(selectedLocker!.locker_id);
+        }
+       
+      } catch (err) {
+        console.error("Error toggling compartment:", err);
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: "Failed to open compartment",
+        });
+      }
+    }
+  }}
+  className={`
+    text-xs font-bold px-3 py-1 rounded-full cursor-pointer
+    ${
+      compartment.status.toLowerCase() === "open"
+        ? "bg-[#41b883] text-white"
+        : "bg-gray-500 text-white hover:bg-gray-400"
+    }
+  `}
+  title={compartment.status.toLowerCase() === "closed" ? "Click to open" : ""}
+>
+  {compartment.status.toUpperCase()}
+</span>
+
+
+
 
                          {/* <button className="bg-[#FFD166] text-black px-4 py-1 rounded-full font-semibold hover:brightness-90 transition mt-2">
                         Update

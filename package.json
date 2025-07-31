@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "electron": "electron .",
+    "electron": "electron ./electron/main.mjs",
     "build": "vite build",
     "dist": "electron-builder"
   },
@@ -19,7 +19,7 @@
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.523.0",
-    "mqtt": "^5.13.3",
+    "mqtt": "^5.14.0",
     "primeicons": "^7.0.0",
     "primereact": "^10.9.6",
     "react": "^19.1.0",

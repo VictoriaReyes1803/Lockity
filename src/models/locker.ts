@@ -37,6 +37,7 @@ export interface Compartment {
   status: string;
   compartment_number: number;
   users: User[];
+  id: number;
 }
 export interface ListCompartmentsResponse {
     data: {
