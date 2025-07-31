@@ -1,5 +1,7 @@
 // src/types/global.d.ts
 export {};
+import type { FCMNotificationPayload } from "./notifications";
+
 
 declare global {
   interface Window {
@@ -9,6 +11,7 @@ declare global {
         userId: number,
         compartmentNumber: number
       ) => void;
+       sendNotification: (notification: FCMNotificationPayload["notification"]) => void;
     };
   }
 }

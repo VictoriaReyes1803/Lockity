@@ -2,27 +2,43 @@
 import { getToken } from "firebase/messaging";
 import { messaging } from "./firebase-config";
 import { onMessage } from "firebase/messaging";
+import type { FCMNotificationPayload } from "../types/notification";
 
 import { notificationsregister, notificationsunregister } from "../services/logsService";
 
 const TOKEN_KEY = "fcm_device_token";
+type NotificationPayload = {
+  title?: string;
+  body?: string;
+  image?: string;
+  icon?: string;
+};
 
 const isElectron = () =>
   typeof window !== "undefined" && window.navigator.userAgent.includes("Electron");
 
 export const setupForegroundNotificationHandler = (
-  showNotification: (message: string, payload: any) => void
+  showNotification: (message: string, payload: FCMNotificationPayload) => void
 ) => {
   onMessage(messaging, (payload) => {
     console.log("Foreground message received:", payload);
-    const { title, body } = payload.notification || {};
-    const message = `${title ? `${title}: ` : ''}${body || ''}`;
-    showNotification(message, payload);
+    if (isElectron() && window.electronAPI?.sendNotification) {
+      window.electronAPI.sendNotification(payload.notification );
+    } else {
+      const { title, body } = payload.notification || {};
+      const message = `${title ? `${title}: ` : ''}${body || ''}`;
+      showNotification(message, payload);
+    }
   });
 };
 
 
 export const initNotifications = async () => {
+    if (isElectron()) {
+  console.log("🔕 Notificaciones FCM deshabilitadas en Electron");
+  return;
+}
+
   try {
    const registration = await navigator.serviceWorker.ready;
 

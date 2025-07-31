@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from "electron";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-
+import { ipcMain, Notification } from "electron";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -25,9 +25,9 @@ function createWindow() {
   win.loadURL("http://localhost:5173");
 
   win.webContents.on("will-navigate", (event, url) => {
-    console.log("navegando a:", url);
+    console.log("navigating to:", url);
     if (url.includes("/users")) {
-      console.log("Bloqueado acceso a /users en Electron");
+      console.log("Blocked access to /users in Electron");
       event.preventDefault();
     }
   });
@@ -43,4 +43,14 @@ app.whenReady().then(() => {
 
 app.on("window-all-closed", function () {
   if (process.platform !== "darwin") app.quit();
+});
+
+ipcMain.on("show-notification", (_event, notification) => {
+  const { title = "Notificación", body = "", image } = notification;
+
+  new Notification({
+    title,
+    body,
+    icon: image || join(__dirname, "images", "logosin.png"), // ícono opcional
+  }).show();
 });

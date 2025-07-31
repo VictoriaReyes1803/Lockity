@@ -1,5 +1,5 @@
 import type { act } from "react";
-import type { logsresponse , LogResponse} from "../models/logs"; // ajusta el path según donde lo tengas
+import type { logsresponse , LogResponse, activityresponse, noscheduleResponse} from "../models/logs"; // ajusta el path según donde lo tengas
 
 import {getApi} from "./interceptor";
 const api = getApi("nest");
@@ -94,3 +94,47 @@ export const auditLogs = async (
       console.log("Notifications unregister response:", response.data);
       return response.data;
     }
+
+    export const chartmovements = async (
+      areaId: number,
+      dateFrom: string,
+      dateTo: string
+    ): Promise<any> => {
+      const params = {
+        dateFrom,
+        dateTo,
+      };
+      const response = await api.get(`${pre}areas/${areaId}/movements/chart`, { params });
+      console.log("Chart movements response:", response.data);
+      return response.data;
+    }
+
+    export const activities = async (
+      page: number,
+      limit: number,
+      status?: string,
+    ): Promise<activityresponse> => {
+      const params: any = {
+        page,
+        limit,
+      };
+      if (status && (status === "success" || status === "failure")) {
+        params.status = status;
+      }
+      const response = await api.get(`${pre}lockers/activities`, { params });
+      console.log("Activities response:", response.data);
+      return response.data;
+    }
+
+    export const noschedule = async (
+      page: number,
+      limit: number
+    ): Promise<noscheduleResponse> => {
+      const params = {
+        page,
+        limit,
+      };
+      const response = await api.get(`${pre}lockers/no-schedules`, { params });
+      console.log("No schedule response:", response.data);
+      return response.data;
+    };
