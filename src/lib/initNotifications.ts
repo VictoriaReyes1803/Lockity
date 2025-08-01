@@ -55,7 +55,7 @@ export const initNotifications = async () => {
     }
 
     const storedToken = localStorage.getItem(TOKEN_KEY);
-    console.log("Stored token:", storedToken);
+    //console.log("Stored token:", storedToken);
 
     // Si el token cambió
     if (storedToken && storedToken !== currentToken) {
@@ -70,7 +70,7 @@ export const initNotifications = async () => {
       localStorage.setItem(TOKEN_KEY, currentToken);
     }
 
-    console.log("Token OK:", currentToken);
+   // console.log("Token OK:", currentToken);
   } catch (error) {
     console.error("Error initializing notifications", error);
   }

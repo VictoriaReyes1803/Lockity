@@ -14,7 +14,7 @@ interface TokenPayload {
 
 export default function PrivateRoute({ children }: PrivateRouteProps) {
   const token = getEncryptedCookie("access_token");
-  console.log("Token in PrivateRoute:", token);
+  // console.log("Token in PrivateRoute:", token);
   if (!token) {
     return <Navigate to="/" replace />;
   }
