@@ -18,6 +18,7 @@ export default function UserInformation() {
     last_name: "",
     second_last_name: "",
     email: "",
+    roles: [],
   });
 
   useEffect(() => {
@@ -25,7 +26,10 @@ export default function UserInformation() {
       setLoading(true);
       try {
         const user = await Me();
-        setForm(user.data);
+        console.log("User data:", user.data);
+        if (user?.data) {
+  setForm(user.data);
+}
       } catch (err) {
          let message = "Failed to fetch user data.";
       if (
@@ -45,7 +49,7 @@ export default function UserInformation() {
       toast.current?.show({
         severity: "error",
         summary: "Error",
-        detail: message,
+        detail: message ?? "An unexpected error occurred.",
         life: 3000,
       });
 
@@ -95,7 +99,7 @@ if (!emailRegex.test(form.email.trim())) {
   try {
     const updated = await UpdateUser(form);
 
-    setForm(updated.data);
+    window.location.reload();
     toast.current?.show({
       severity: 'success',
       summary: 'UpdateF Successful',
@@ -193,6 +197,7 @@ if (!emailRegex.test(form.email.trim())) {
 
           <button
             type="submit"
+            onSubmit={handleSubmit}
             className="w-full mt-6 bg-[#FFD166] text-black font-semibold py-2 hover:brightness-90 transition"
           >
             Update
@@ -214,7 +219,7 @@ if (!emailRegex.test(form.email.trim())) {
               });
             }
           } else {
-            // Use locker_serial_number as unique key
+          
             groupedRoles.set(
               `${role.role}-${role.organization_name}-${role.area_name}-${role.locker_serial_number}`,
               role

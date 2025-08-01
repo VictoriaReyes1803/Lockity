@@ -12,14 +12,52 @@ import NotFound from './pages/notfound';
 import HomeDesktop from './pagesDesktop/home';
 import Lockers from './pages/Lockers';
 import Logs from './pages/Logs';
+import { useEffect , useRef, useState} from "react";
+import { Toast } from "primereact/toast";
+import { initNotifications, setupForegroundNotificationHandler } from "./lib/initNotifications";
+import FCMNotificationModal from './components/FCMNotificationsModal';
+import type { FCMNotificationPayload } from './components/FCMNotificationsModal';
+import { onMessage } from "firebase/messaging";
 
 import Dashboard from './pagesDesktop/dashboard'; 
 const isElectron = () => window.navigator.userAgent.includes("Electron");
 
 function App() {
+
+const [fcmVisible, setFcmVisible] = useState(false);
+const [fcmData, setFcmData] = useState<FCMNotificationPayload | null>(null);
+
+const toast = useRef<Toast>(null);
+
+
+ useEffect(() => {
+    const start = async () => {
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        await initNotifications();
+
+        setupForegroundNotificationHandler((msg, payload) => {
+          const { title, body, image } = payload.notification || {};
+          setFcmData({ title: title ?? 'Notificación', body: body ?? '', image });
+          setFcmVisible(true);
+        });
+      }
+    };
+
+    start();
+  }, []);
+
+
+
  return (
     <div className="bg-[#2E2D2D] text-white font-sans min-h-screen w-full">
   
+     <Toast ref={toast} />
+      <FCMNotificationModal
+        payload={fcmData!}
+        visible={fcmVisible}
+        onHide={() => setFcmVisible(false)}
+      />
 
       <Routes>
       <Route path="/" element={  isElectron() ? <HomeDesktop /> : <Home /> }/>

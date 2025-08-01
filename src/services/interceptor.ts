@@ -1,6 +1,6 @@
 // src/services/api.ts
 import axios, { type AxiosInstance } from "axios";
-
+import { setEncryptedCookie , getEncryptedCookie} from '../lib/secureCookies';
 type Backend = "laravel" | "nest";
 
 export const getApi = (backend: Backend): AxiosInstance => {
@@ -17,7 +17,7 @@ export const getApi = (backend: Backend): AxiosInstance => {
   });
 
   instance.interceptors.request.use((config) => {
-    const token = localStorage.getItem("access_token");
+    const token = getEncryptedCookie("access_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

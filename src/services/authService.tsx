@@ -1,6 +1,8 @@
 
 import type { User, userlist} from "../models/User";
 import {getApi} from "./interceptor";
+import { getEncryptedCookie } from '../lib/secureCookies';
+import Cookies from "js-cookie";
 const api = getApi("laravel");
 const pre = 'api/users/';
 
@@ -28,8 +30,10 @@ export const Logout = async (): Promise<{ apiResponse: any; webLogoutResponse: a
     const apiResponse = await api.post(`${pre}auth/logout`);
     console.log("Logout response:", apiResponse.data);
 
-    localStorage.clear();
-    sessionStorage.clear();
+    Cookies.remove("access_token");
+    Cookies.remove("oauth_state");
+    Cookies.remove("pkce_code_verifier");
+    
 
     const webLogoutResponseRaw = await fetch(`${import.meta.env.VITE_BACKEND_URL}web-logout`, {
       method: 'POST',

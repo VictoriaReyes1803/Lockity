@@ -5,9 +5,12 @@ import { useRef, useState, useEffect } from "react";
 import Loader from "../components/Loader";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { organization, Area } from "../models/organization";
+import { getEncryptedCookie } from '../lib/secureCookies';
 import { getOrganization, postOrganization,putOrganization, putArea,postArea } from "../services/organizationsService";
 import { getAreas } from "../services/organizationsService";
+import { setEncryptedCookie } from '../lib/secureCookies';
 export default function Lockers() {
+
   const toast = useRef<Toast>(null);
     const [organizationId, setOrganizationId] = useState<string>("");
     const [orgLoaded, setOrgLoaded] = useState(false);
@@ -31,8 +34,8 @@ const [lockerSerial, setLockerSerial] = useState("");
 
 
      const fetchOrgs = async () => {
-  const orgsRaw = sessionStorage.getItem("organizations");
-  const selectedOrg = sessionStorage.getItem("selected_organization_id");
+  const orgsRaw = getEncryptedCookie("o_ae3d8f2b");
+  const selectedOrg = getEncryptedCookie("s_12be90dd");
 
   if (orgsRaw) {
       const parsedOrgs = JSON.parse(orgsRaw);
@@ -47,11 +50,12 @@ const [lockerSerial, setLockerSerial] = useState("");
         setLoading(true);
         const orgResponse = await getOrganization();
         setOrganizations(orgResponse.data.items);
-        sessionStorage.setItem("organizations", JSON.stringify(orgResponse.data.items));
+        setEncryptedCookie("o_ae3d8f2b", JSON.stringify(orgResponse.data.items));
         if (orgResponse.data.items.length > 0) {
           const firstOrgId = orgResponse.data.items[0].id.toString();
           setOrganizationId(firstOrgId);
-          sessionStorage.setItem("selected_organization_id", firstOrgId);
+
+          setEncryptedCookie("s_12be90dd", firstOrgId);
         }
         setOrgLoaded(true);
       } catch (err) {
@@ -86,6 +90,27 @@ const fetchAreas = async () => {
 
 
  
+useEffect(() => {
+  const handleEsc = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setShowAreaModal(false);
+      setShowOrgModal(false);
+      setEditingArea(null);
+      setEditingOrg(null);
+      setOrgName("");
+      setOrgDescription("");
+      setAreaName("");
+      setAreaDescription("");
+      setLockerSerial("");
+      setOrganizationId("");
+    }
+  };
+
+  window.addEventListener("keydown", handleEsc);
+  return () => {
+    window.removeEventListener("keydown", handleEsc);
+  };
+}, []);
 
 
   return (
@@ -100,9 +125,9 @@ const fetchAreas = async () => {
 
         <div className="mt-6 bg-[#252525] rounded-xl p-6 overflow-x-auto ml-6 mr-2">
           <div className="flex justify-between items-center mb-4">
-            <button className="bg-[#555555] text-white px-4 py-1 rounded-full font-semibold hover:brightness-90 transition">
+            {/* <button className="bg-[#555555] text-white px-4 py-1 rounded-full font-semibold hover:brightness-90 transition">
               View Logs
-            </button>
+            </button> */}
             <div className="flex items-center gap-2 text-lg font-semibold">
               Add Organization
              <img
@@ -137,7 +162,7 @@ const fetchAreas = async () => {
       }`}
       onClick={() => {
         setOrganizationId(org.id.toString());
-        sessionStorage.setItem("selected_organization_id", org.id.toString());
+        setEncryptedCookie("s_12be90dd", org.id.toString());
       }}
     >
       <h3 className="text-lg font-semibold">{org.name}</h3>

@@ -2,10 +2,10 @@ import Sidebar from "../components/sidebar";
 import Toolbar from "../components/Toolbar";
 import { useEffect, useState } from "react";
 import Loader from "../components/Loader";
-import type { Users, User} from "../models/User";
+import type { Users} from "../models/User";
 import { Toast } from 'primereact/toast';
 import { useRef } from "react";
-
+import { getEncryptedCookie } from '../lib/secureCookies';
 import { getLockers , getCompartments, deleteRole } from "../services/lockersService";
 import { Paginator } from 'primereact/paginator';
 import { getUsersWithLockers, putUserRole} from "../services/usersService";
@@ -35,7 +35,7 @@ export default function Users() {
   const [availableCompartments, setAvailableCompartments] = useState<Compartment[]>([]);
 
 useEffect(() => {
-  const orgsRaw = sessionStorage.getItem("organizations");
+  const orgsRaw = getEncryptedCookie("o_ae3d8f2b");
   
   if (orgsRaw) {
     try {
@@ -60,7 +60,7 @@ useEffect(() => {
     try {
       const data = await getUsersWithLockers(orgId, currentPage + 1, currentRows,roleFilter || undefined);
 
-      const currentUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+      const currentUser = JSON.parse(getEncryptedCookie("u_7f2a1e3c") || "{}");
 
       const filteredUsers = data.items.filter(
       (user) => user.id !== currentUser.id && user.email !== currentUser.email
@@ -193,6 +193,27 @@ const fetchCompartments = async (lockerId: number) => {
 
 
 
+useEffect(() => {
+  const handleEsc = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setShowModal(false);
+      setShowRemoveModal(false);
+      setSelectedUser(null);  
+      setSelectedRoleIndex(null);
+      setNewEmail("");
+      setSelectedLocker(null);
+      setSelectedCompartment(null); 
+
+      setAvailableCompartments([]);
+      setAvailableLockers([]);
+    }
+  };
+
+  window.addEventListener("keydown", handleEsc);
+  return () => {
+    window.removeEventListener("keydown", handleEsc);
+  };
+}, []);
 
 
 
@@ -445,7 +466,7 @@ const fetchCompartments = async (lockerId: number) => {
         >
           <option value="user">User</option>
           <option value="admin">Admin</option>
-          <option value="super_admin">Super Admin</option>
+
         </select>
       </div>
       <div className="mb-2">

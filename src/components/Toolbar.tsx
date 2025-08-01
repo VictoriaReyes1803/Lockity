@@ -4,6 +4,7 @@ import type { User } from "../models/User";
 import type { organization } from "../models/organization";
 import { getOrganization } from "../services/organizationsService";
 import { Toast } from "primereact/toast";
+import { setEncryptedCookie, getEncryptedCookie } from '../lib/secureCookies';
 
 interface ToolbarProps {
   title: string;
@@ -21,14 +22,14 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
     const fetchData = async () => {
       try {
         const fetchedUser = await Me();
-        sessionStorage.setItem("user", JSON.stringify(fetchedUser.data));
+        setEncryptedCookie("u_7f2a1e3c", JSON.stringify(fetchedUser.data));
         setUser(fetchedUser.data);
 
         if (showOrganizationSelect) {
 
-          const storedOrganizations = sessionStorage.getItem("organizations");
+          const storedOrganizations = getEncryptedCookie("o_ae3d8f2b");
           console.log("Stored organizations:", storedOrganizations);
-          const storedSelectedOrg = sessionStorage.getItem("selected_organization_id");
+          const storedSelectedOrg = getEncryptedCookie("s_12be90dd");
 
           if (storedOrganizations) {
             const parsedOrgs = JSON.parse(storedOrganizations) as organization[];
@@ -36,14 +37,16 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
 
             if (storedSelectedOrg && storedSelectedOrg !== selectedOrgId) {
               setSelectedOrgId(storedSelectedOrg);
-              sessionStorage.setItem("selected_organization_id", storedSelectedOrg);
+
+              setEncryptedCookie("s_12be90dd", storedSelectedOrg);
               onChangeOrganization?.(storedSelectedOrg);
             }
               if (!storedSelectedOrg && parsedOrgs.length > 0) {
               console.log("No selected organization found in sessionStorage, setting first organization as default.");
               const firstOrgId = parsedOrgs[0].id.toString();
               setSelectedOrgId(firstOrgId);
-              sessionStorage.setItem("selected_organization_id", firstOrgId);
+
+              setEncryptedCookie("s_12be90dd", firstOrgId);
               onChangeOrganization?.(firstOrgId);
             }  
 
@@ -57,13 +60,13 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
               setOrganizations(orgResponse.data.items);
               
               const parsedOrgs = orgResponse.data.items as organization[];
-              sessionStorage.setItem("organizations", JSON.stringify(orgResponse.data.items));
+              setEncryptedCookie("o_ae3d8f2b", JSON.stringify(orgResponse.data.items));
 
               if (!storedSelectedOrg && parsedOrgs.length > 0) {
    
               const firstOrgId = parsedOrgs[0].id.toString();
               setSelectedOrgId(firstOrgId);
-              sessionStorage.setItem("selected_organization_id", firstOrgId);
+              setEncryptedCookie("s_12be90dd", firstOrgId);
               onChangeOrganization?.(firstOrgId);
             }  
 
@@ -79,6 +82,13 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
         }
       } catch (err) {
         console.error("Failed to load data:", err);
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: "Failed to load user data.",
+          life: 3000,
+        });
+        
       }
     };
 
@@ -89,7 +99,7 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
   const handleOrgChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const orgId = e.target.value;
     setSelectedOrgId(orgId);
-    sessionStorage.setItem("selected_organization_id", orgId);
+    setEncryptedCookie("s_12be90dd", orgId);
     onChangeOrganization?.(orgId);
   };
 

@@ -6,6 +6,7 @@ import { useRef } from "react";
 import { Logout } from "../services/authService";
 import type { User } from "../models/User";
 import { useNavigate } from "react-router-dom";
+import { getEncryptedCookie } from '../lib/secureCookies';
 
 
 const isElectron = () => window.navigator.userAgent.includes("Electron");
@@ -28,7 +29,7 @@ const navigate = useNavigate();
       const fetchData = async () => {
         setLoading(true);
         try {
-            const fetchedUser = sessionStorage.getItem("user");
+            const fetchedUser = getEncryptedCookie("u_7f2a1e3c");
             setUser(fetchedUser ? JSON.parse(fetchedUser) as User : null);
   
         } catch (err) {

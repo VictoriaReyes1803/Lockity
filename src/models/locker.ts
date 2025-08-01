@@ -16,6 +16,7 @@ export interface Locker {
     organization_name: string;
     area_name: string;
     schedules?: Schedule[];
+    compartments?: Compartment[];
 }
 export interface LockerListResponse {
   data:
@@ -32,10 +33,11 @@ export interface LockerListResponse {
 
 }
 export interface Compartment {
-id : number;
-status: string;
-compartment_number: number;
-users : User[];
+  compartment_id: number;
+  status: string;
+  compartment_number: number;
+  users: User[];
+  id: number;
 }
 export interface ListCompartmentsResponse {
     data: {

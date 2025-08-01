@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { setEncryptedCookie } from '../lib/secureCookies';
 import { generateCodeVerifier, generateCodeChallenge } from '../utils/pkce';
 
 const url = import.meta.env.VITE_BACKEND_URL;
@@ -21,8 +21,8 @@ const handle = async () => {
   const codeChallenge = await generateCodeChallenge(codeVerifier);
   const state = crypto.randomUUID();
 
-  localStorage.setItem('pkce_code_verifier', codeVerifier);
-  localStorage.setItem('oauth_state', state);
+  setEncryptedCookie('pkce_code_verifier', codeVerifier);
+  setEncryptedCookie('oauth_state', state);
 
   const clientId = import.meta.env.VITE_CLIENT_ID;
   const redirectUri = import.meta.env.VITE_REDIRECT_URI;
@@ -35,6 +35,7 @@ const handle = async () => {
     state,
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
+    device: 'desktop',
   });
 
   window.location.href = `${url}oauth/authorize?${queryParams.toString()}`;
