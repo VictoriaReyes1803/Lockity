@@ -22,7 +22,7 @@ function createWindow() {
     },
   });
 
-  win.loadURL("http://localhost:5173");
+  win.loadURL("https://lockity.site");
 
   win.webContents.on("will-navigate", (event, url) => {
     console.log("navigating to:", url);
