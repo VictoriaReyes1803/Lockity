@@ -1,24 +1,11 @@
 // import { useLocation } from 'react-router-dom';
-<<<<<<< HEAD
-const loadPkce = async () => {
-  return await import('../utils/pkce');
-};
-
-
-=======
 import { generateCodeVerifier, generateCodeChallenge } from '../utils/pkce';
 import { setEncryptedCookie } from '../lib/secureCookies';
->>>>>>> 82fd66a91f4e0fb5923beccc9748c9b36e3c2dff
 const url = import.meta.env.VITE_BACKEND_URL;
 
 const isElectron = () => window.navigator.userAgent.includes("Electron");
 
 const handle = async () => {
-  if (typeof window === 'undefined' || !window.crypto?.subtle) {
-    console.error('Web Crypto API no disponible.');
-    return;
-  }
-   const { generateCodeVerifier, generateCodeChallenge } = await loadPkce();
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = await generateCodeChallenge(codeVerifier);
   const state = crypto.randomUUID();
@@ -72,14 +59,7 @@ function NavbarHome() {
           <div className="flex-1 flex justify-center items-center space-x-10 text-sm font-semibold">
 
             <button
-  onClick={() => {
-    if (typeof window !== 'undefined' && window.crypto?.subtle) {
-      handle();
-    } else {
-      console.error("Web Crypto API no está disponible.");
-    }
-  }}
-
+              onClick={handle}
               className="space-x-10 text-sm font-semibold hover:underline underline-offset-4 transition"
             >
               Access
