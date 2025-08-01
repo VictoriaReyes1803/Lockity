@@ -55,7 +55,7 @@ export interface AuditLog {
     locker: locker;
     performed_by: performed_by;
     timestamp: string;
-    target_user: performed_by;
+    target_user?: performed_by;
 }
 export interface activityresponse
 {

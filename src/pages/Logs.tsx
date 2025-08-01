@@ -334,7 +334,7 @@ useEffect(() => {
                       hour12: false
                     })}</td>
 
-                  <td>{log.target_user.full_name}</td>
+                  <td>{log.target_user?.full_name}</td>
                 </tr>
               ))}
             </tbody>
