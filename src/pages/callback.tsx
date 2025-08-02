@@ -47,6 +47,7 @@ console.log('Exchanging code for token with body:', body.toString());
             'Content-Type': 'application/x-www-form-urlencoded',
           },
           body,
+          credentials: 'include', 
         });
 
         const data = await response.json();

@@ -26,48 +26,52 @@ useEffect(() => {
     setLoading(true);
     try {
       const result = await haslocker();
-      console.log("checkLocker on welcome page:", result);
-      setLoading(false);
-      if (result) {
+      console.log("Locker check result:", result);
 
-         if (typeof window !== "undefined" && !window.navigator.userAgent.includes("Electron")) {
-        
-                  const userRaw = getEncryptedCookie("u_7f2a1e3c");
-                  console.log("User cookie:", userRaw);
-                  if (userRaw) {
-                    try {
-                      const user = JSON.parse(userRaw);
-        
-                      const isSuperAdmin = Array.isArray(user.roles) &&
-                        user.roles.some((r: any) => r.role === "super_admin");
-        
-                      if (!isSuperAdmin) {
-                        // navigate("/welcome", { replace: true });
-                        return;
-                      }
-        
-            } catch (error) {
-              console.error("Invalid user cookie format", error);
-              // navigate("/welcome", { replace: true });
-              return;
-            }
-        
-            
-          } else {
-            // navigate("/welcome", { replace: true });
-            return;
-          }
-        } else {
+      // 1. Si no tiene locker, se queda en /welcome
+      if (!result) {
+        console.log("No tiene locker, quedarse en welcome.");
+        setLoading(false);
+        return;
+      }
 
-        navigate("/lockers", { replace: true });
+      // 2. Si tiene locker, revisar si es super_admin (solo en web)
+      if (typeof window !== "undefined" && !window.navigator.userAgent.includes("Electron")) {
+        const userRaw = getEncryptedCookie("u_7f2a1e3c");
+        console.log("User cookie:", userRaw);
+
+        if (!userRaw) {
+          console.warn("Cookie no encontrada, quedarse en welcome.");
+          setLoading(false);
+          return;
         }
 
+        try {
+          const user = JSON.parse(userRaw);
+          const isSuperAdmin = Array.isArray(user.roles) &&
+            user.roles.some((r: any) => r.role === "super_admin");
+
+          if (!isSuperAdmin) {
+            console.log("Es admin pero no super_admin, quedarse en welcome.");
+            setLoading(false);
+            return;
+          }
+
+          // ✅ Tiene locker y es super_admin → va a /lockers
+          console.log("Es super_admin con locker, redirigiendo a /lockers.");
+          navigate("/lockers", { replace: true });
+        } catch (error) {
+          console.error("Error leyendo cookie:", error);
+        }
       }
+
+      setLoading(false);
     } catch (error) {
-      console.error("Error checking locker on welcome:", error);
-     setLoading(false); 
+      console.error("Error en checkLocker:", error);
+      setLoading(false);
     }
   };
+
   checkLocker();
 }, [navigate]);
 
