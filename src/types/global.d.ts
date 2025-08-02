@@ -9,7 +9,8 @@ declare global {
       publishToggleCommand: (
         serialNumber: string,
         userId: number,
-        compartmentNumber: number
+        compartmentNumber: number,
+        soruce: string
       ) => void;
        sendNotification: (notification: FCMNotificationPayload["notification"]) => void;
     };

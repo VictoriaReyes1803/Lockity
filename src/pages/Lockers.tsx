@@ -431,7 +431,8 @@ useEffect(() => {
         window.electronAPI?.publishToggleCommand(
               selectedLocker!.locker_serial_number,
               userId,
-              compartment.id
+              compartment.compartment_number,
+              'desktop'
             );
 
         await fetchCompartments(selectedLocker!.locker_id);
