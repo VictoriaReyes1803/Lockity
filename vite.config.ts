@@ -16,7 +16,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
       },
       srcDir: 'src',
-      filename: 'firebase-messaging-sw.ts',
+      filename: 'firebase-messaging-sw.js',
     }),
   ],
 });
