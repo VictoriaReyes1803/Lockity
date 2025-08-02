@@ -1,41 +1,36 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import Toolbar from "../components/Toolbar";
 import { Toast } from "primereact/toast";
-import { useRef, useState, useEffect } from "react";
-import { activities, noschedule } from "../services/logsService"; 
+import { useRef, useState, useEffect, use } from "react";
+import { activities, noschedule, chartmovements } from "../services/logsService"; 
 import Loader from "../components/Loader";
+import {groupChartData} from "../lib/helper/helperdate"; 
 
-const chartData = [
-	{ name: "Jan", value: 10000 },
-	{ name: "Feb", value: 20000 },
-	{ name: "Mar", value: 30000 },
-	{ name: "Apr", value: 35000 },
-	{ name: "May", value: 40000 },
-	{ name: "Jun", value: 38000 },
-	{ name: "Jul", value: 32000 },
-	{ name: "Aug", value: 39000 },
-	{ name: "Sep", value: 41000 },
-	{ name: "Oct", value: 39000 },
-	{ name: "Nov", value: 37000 },
-	{ name: "Dec", value: 35000 },
-];
+
 
 export default function Dashboard() {
-		const [organizationId, setOrganizationId] = useState<string>("");
+		const [organizationId, setOrganizationId] = useState<number | null>(null);
 		const [page, setPage] = useState(0); 
 		const toast = useRef<Toast>(null);
+		const [chartData, setChartData] = useState<any[]>([]);
+		const [groupBy, setGroupBy] = useState<"day" | "week" | "month" | "year">("day");
+const [dateFrom, setDateFrom] = useState("2025-07-27");
+const [dateTo, setDateTo] = useState("2025-08-01");
+
 		const [lockers, setLockers] = useState<any[]>([]);	
 		const [totalLockers, setTotalLockers] = useState(0);
 		const[limitlockers, setLimitLockers] = useState(10);
 		const [attempts, setAttempts] = useState<any[]>([]);
 const [totalAttempts, setTotalAttempts] = useState(0);
-const [limit, setLimit] = useState(10);
+const [limit, setLimit] = useState(5);
+const [statusFilter, setStatusFilter] = useState<string>("success");
+
 const [loading, setLoading] = useState(false);
 
 const fetchActivities = async () => {
     try {
       setLoading(true);
-      const res = await activities(page, limit); 
+	  const res = await activities(page, limit, statusFilter, organizationId !== null ? String(organizationId) : undefined); 
       setAttempts(res.data.items || []); 
       setTotalAttempts(res.data.total || 0);
     } catch (err) {
@@ -54,7 +49,7 @@ const fetchActivities = async () => {
   const fectchnoschendule = async () => {
 	try {
 		setLoading(true);
-		const res = await noschedule(page, limit); 
+		const res = await noschedule(page, limit, organizationId !== null ? String(organizationId) : undefined); 
 		setLockers(res.data.items || []); 
 		setTotalLockers(res.data.total || 0);
 		setLimitLockers(res.data.limit || 10);
@@ -72,17 +67,46 @@ const fetchActivities = async () => {
 	}
   };
 
+  const fetchChartData = async () => {
+	try {
+	  setLoading(true);
+	  const res = await chartmovements(Number(organizationId), dateFrom, dateTo);
+
+	  
+	  const grouped = groupChartData(res.data.items || [], groupBy);
+	  console.log("Grouped chart data:", grouped);
+setChartData(grouped);
+
+	  
+	} catch (err) {
+	  console.error("Error fetching chart data", err);
+	  toast.current?.show({
+		severity: "error",
+		summary: "Error",
+		detail: "Failed to fetch chart data",
+		life: 3000,
+	  });
+	} finally {
+	  setLoading(false);
+	}
+  };
+
+
 useEffect(() => {
   
   fetchActivities();
 
-}, [page, limit]);
+}, [page, limit, statusFilter, organizationId]);
 
 useEffect(() => {
   fectchnoschendule();
-}, [totalLockers, limitlockers]);
+}, [totalLockers, limitlockers, organizationId]);
 
-
+useEffect(() => {
+  if (organizationId) {
+	fetchChartData();
+  }
+}, [organizationId, dateFrom, dateTo, groupBy]);
 
 	return (
 		 <div className="flex h-screen bg-[#2e2d2d] text-white font-sans">
@@ -92,39 +116,73 @@ useEffect(() => {
           title="Lockers"
           showOrganizationSelect={true}
           onChangeOrganization={(id) => {
-            setOrganizationId(id);
-            setPage(0);
+			setOrganizationId(Number(id));
+			setPage(0);
           }}
         />
         <Toast ref={toast} />
-		<div className="bg-[#2E2D2D] min-h-screen w-full text-black p-8 font-['Roboto']">
-			<div className="flex flex-col md:flex-row gap-6 mb-8">
-				<div className="bg-white rounded-xl p-4 flex-1 min-w-[400px]">
-					<div className="flex items-center mb-4">
-						<span className="font-semibold text-lg text-black">
+		<div className="bg-[#2E2D2D] min-h-screen w-full text-black p-5 font-['Roboto']">
+			<div className="flex flex-col md:flex-row gap-6 mb-3">
+				<div className="bg-white rounded-xl p-4  w-full md:w-[40%]">
+					<div className="flex items-center mb-1">
+						<span className="font-semibold text-lg text-black ">
 							Locker without assigned dates
 						</span>
 					</div>
-					<div className="flex gap-4 overflow-x-auto pb-2">
+					<div className="flex gap-4 overflow-x-auto pb-2  h-[80%]">
 						{lockers.map((locker, idx) => (
 							<div
 								key={idx}
-								className="bg-[#eaeaea] text-black rounded-lg p-4 min-w-[220px] shadow"
+								className="bg-[#eaeaea] text-black rounded-lg p-4 min-w-[120px] shadow"
 							>
-								<div className="font-semibold">Locker: {locker.locker_id}</div>
-								<div className="text-sm">Serial: {locker.serial_number}</div>
-								<div className="text-sm">Area: {locker.area}</div>
-								<div className="text-sm">
-									Organization: {locker.organization}
-								</div>
+								<div className="font-semibold text-lg ">Locker Number: {locker.locker_number}</div>
+								<div className="text-md">Serial: {locker.locker_serial_number}</div>
+								<div className="text-md">Area: {locker.area}</div>
+								
 							</div>
 						))}
 					</div>
 				</div>
-				<div className="bg-white rounded-xl p-4 flex-1 min-w-[300px]">
-					<div className="font-semibold mb-2 text-sm text-black">
-						Movements by UTT in 2024
-					</div>
+				<div className="bg-white rounded-xl p-4 flex-1 w-full md:w-[60%]">
+					<div className="flex gap-3 items-center text-center mb-2 text-black text-sm">
+  <div className="flex items-center gap-2">
+    <label className="text-xs font-medium mb-1 mr-1">From</label>
+    <input
+      type="date"
+      className="bg-white border border-gray-300 rounded px-2 py-[3px] text-xs w-[120px]"
+      value={dateFrom}
+      onChange={(e) => setDateFrom(e.target.value)}
+    />
+  </div>
+  <div className="flex items-center gap-2">
+    <label className="text-xs font-medium mb-1 mr-1">To</label>
+    <input
+      type="date"
+      className="bg-white border border-gray-300 rounded px-2 py-[3px] text-xs w-[120px]"
+      value={dateTo}
+      onChange={(e) => setDateTo(e.target.value)}
+    />
+  </div>
+  <div className="flex items-center gap-2">
+    <label className="text-xs font-medium mb-1 mr-1">Group By</label>
+    <select
+      value={groupBy}
+      onChange={(e) => setGroupBy(e.target.value as any)}
+      className="bg-white border border-gray-300 rounded px-2 py-[3px] text-xs w-[100px]"
+    >
+      <option value="day">Day</option>
+      <option value="week">Week</option>
+      <option value="month">Month</option>
+      <option value="year">Year</option>
+    </select>
+  </div>
+</div>
+
+
+					{/* <div className="font-semibold text-sm text-black w-full text-center">
+					Movements from {dateFrom} to {dateTo}
+					</div> */}
+
 					<ResponsiveContainer width="100%" height={150}>
 						<BarChart data={chartData}>
 							<XAxis dataKey="name" stroke="#000" fontSize={12} />
@@ -140,7 +198,7 @@ useEffect(() => {
 				</div>
 			</div>
 
-			<div className="font-semibold text-lg mb-4 text-white">Last attempts</div>
+			<div className="font-semibold text-lg mb-2 text-white">Last attempts</div>
 
 			<div className="flex bg-[#444444] text-white font-semibold rounded-xl mb-4">
 				<div className="py-2 px-3 w-1/5">User</div>
@@ -148,8 +206,17 @@ useEffect(() => {
 				<div className="py-2 px-3 w-1/5">Compartments</div>
 				<div className="py-2 px-3 w-1/5">Date</div>
 				<div className="py-2 px-3 w-1/5 flex items-center gap-1">
-					State
-				</div>
+  <select
+    className="bg-[#444444] text-white border border-white text-sm rounded"
+    value={statusFilter}
+    onChange={(e) => setStatusFilter(e.target.value)}
+  >
+  
+    <option value="success">Success</option>
+    <option value="failure">Failure</option>
+  </select>
+</div>
+
 			</div>
 
 			<div className="bg-white rounded-xl p-4">
@@ -163,17 +230,19 @@ useEffect(() => {
       </td>
     </tr>
   ) : (
-						attempts.map((a, idx) => (
+						attempts
+  .map((a, idx) => (
+
   <tr key={idx} className="border-b border-[#eaeaea]">
     <td className="py-2 px-3 w-1/5">
-      <div className="font-semibold">{a.performerName}</div>
-      <div className="text-xs text-gray-500">{a.performerRole}</div>
+      <div className="font-semibold">{a.user}</div>
+      <div className="text-xs text-gray-500">{a.role}</div>
     </td>
-    <td className="py-2 px-3 w-1/5">{a.lockerId}</td>
-    <td className="py-2 px-3 w-1/5">{a.compartmentId || a.compartment}</td>
+    <td className="py-2 px-3 w-1/5">{a.locker_serial_number}</td>
+    <td className="py-2 px-3 w-1/5">{a.compartment_number}</td>
     <td className="py-2 px-3 w-1/5">
       <div>{a.date}</div>
-      <div className="text-xs text-gray-500">{a.time}</div>
+      <div className="text-xs text-gray-500">{a.date_time}</div>
     </td>
     <td className="py-2 px-3 w-1/5">
       <span
@@ -209,6 +278,7 @@ useEffect(() => {
   }}
   className="ml-4 bg-white border border-[#eaeaea] rounded px-2 py-1 text-black"
 >
+	<option value={5}>5</option>
   <option value={10}>10</option>
   <option value={20}>20</option>
   <option value={50}>50</option>

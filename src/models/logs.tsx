@@ -76,6 +76,7 @@ locker_id: number;
     compartment_number: number;
     organization: string;
     area: string;
+    email: string;
     user: string;
     status: string;
     date_time: string;

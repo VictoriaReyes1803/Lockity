@@ -19,6 +19,7 @@ export default function Lockers() {
     const [page, setPage] = useState(0); 
     const [editingArea, setEditingArea] = useState<Area | null>(null);
 const [showAreaModal, setShowAreaModal] = useState(false);
+const isElectron = typeof window !== "undefined" && window.navigator.userAgent.includes("Electron");
 
     const [showOrgModal, setShowOrgModal] = useState(false);
 const [editingOrg, setEditingOrg] = useState<organization | null>(null);
@@ -32,23 +33,11 @@ const [lockerSerial, setLockerSerial] = useState("");
     const [loading, setLoading] = useState<boolean>(false);
 
 
-
-     const fetchOrgs = async () => {
-  const orgsRaw = getEncryptedCookie("o_ae3d8f2b");
-  const selectedOrg = getEncryptedCookie("s_12be90dd");
-
-  if (orgsRaw) {
-      const parsedOrgs = JSON.parse(orgsRaw);
-      setOrganizations(parsedOrgs);
-
-      if (selectedOrg) {
-        setOrganizationId(selectedOrg);
-        setOrgLoaded(true);
-      }
-    } else {
-      try {
+const orgs =async () => {
+   try {
         setLoading(true);
         const orgResponse = await getOrganization();
+        //console.log("Organization response:", orgResponse);
         setOrganizations(orgResponse.data.items);
         setEncryptedCookie("o_ae3d8f2b", JSON.stringify(orgResponse.data.items));
         if (orgResponse.data.items.length > 0) {
@@ -63,6 +52,21 @@ const [lockerSerial, setLockerSerial] = useState("");
       } finally {
         setLoading(false);
       }
+    }
+     const fetchOrgs = async () => {
+  const orgsRaw = getEncryptedCookie("o_ae3d8f2b");
+  const selectedOrg = getEncryptedCookie("s_12be90dd");
+
+  if (orgsRaw) {
+      const parsedOrgs = JSON.parse(orgsRaw);
+      setOrganizations(parsedOrgs);
+
+      if (selectedOrg) {
+        setOrganizationId(selectedOrg);
+        setOrgLoaded(true);
+      }
+    } else {
+     orgs();
     }
   };
 
@@ -128,24 +132,25 @@ useEffect(() => {
             {/* <button className="bg-[#555555] text-white px-4 py-1 rounded-full font-semibold hover:brightness-90 transition">
               View Logs
             </button> */}
-            <div className="flex items-center gap-2 text-lg font-semibold">
-              Add Organization
-             <img
-  src="/images/Plus.svg"
-  alt="Add Org"
-  className="w-7 h-7 cursor-pointer"
-  onClick={() => {
-    setEditingOrg(null);
-    setOrgName("");
-    setOrgDescription("");
-    setAreaName("");
-    setAreaDescription("");
-    setLockerSerial("");
-    setShowOrgModal(true);
-  }}
-
-              />
-            </div>
+            {!isElectron && (
+              <div className="flex items-center gap-2 text-lg font-semibold">
+                Add Organization
+                <img
+                  src="/images/Plus.svg"
+                  alt="Add Org"
+                  className="w-7 h-7 cursor-pointer"
+                  onClick={() => {
+                    setEditingOrg(null);
+                    setOrgName("");
+                    setOrgDescription("");
+                    setAreaName("");
+                    setAreaDescription("");
+                    setLockerSerial("");
+                    setShowOrgModal(true);
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           {loading && <Loader />}
@@ -380,7 +385,7 @@ useEffect(() => {
 
               setShowOrgModal(false);
               sessionStorage.clear();
-              fetchOrgs?.(); 
+              orgs();
             } catch (e) {
               console.error("Failed to save organization", e);
               if (

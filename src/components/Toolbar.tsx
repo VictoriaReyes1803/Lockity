@@ -101,7 +101,33 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
     setSelectedOrgId(orgId);
     setEncryptedCookie("s_12be90dd", orgId);
     onChangeOrganization?.(orgId);
+    
   };
+const handleOrgFocus = async () => {
+  try {
+    const orgResponse = await getOrganization();
+    if (orgResponse.success) {
+      const newOrgs = orgResponse.data.items;
+      setOrganizations(newOrgs);
+      setEncryptedCookie("o_ae3d8f2b", JSON.stringify(newOrgs));
+    } else {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Warning",
+        detail: orgResponse.message,
+        life: 3000,
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching organizations:", error);
+    toast.current?.show({
+      severity: "error",
+      summary: "Error",
+      detail: "Failed to refresh organizations.",
+      life: 3000,
+    });
+  }
+};
 
   return (
     <header className="w-full h-[60px] bg-gradient-to-t from-[#737373] to-[#2e2e2e]  flex items-center justify-between px-6 text-white shadow-lg">
@@ -115,6 +141,7 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
         <select
           value={selectedOrgId}
           onChange={handleOrgChange}
+          onFocus={handleOrgFocus}
           className="bg-[#444] text-white rounded px-2 py-1 ml-4"
         >
           <option value="">Select organization</option>

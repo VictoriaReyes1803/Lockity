@@ -3,18 +3,20 @@ import Toolbar from "../components/Toolbar";
 import { Toast } from "primereact/toast";
 import { useNavigate } from "react-router-dom";
 import { use, useState } from "react";
-
+import Loader from "../components/Loader";
+import { useRef, useEffect } from "react";
 import { Paginator } from "primereact/paginator";
 import type { Area } from "../models/organization";
 import { getAreas } from "../services/organizationsService";
 import { getlockersforArea, getCompartments } from "../services/lockersService";
-import { useEffect } from "react";
+
 import type { User } from "../models/User";
 import type { Locker } from "../models/locker";
 import { accesslogs, auditLogs } from "../services/logsService"; 
 import { supabase } from "../lib/supabaseClient";
 
  export default function Logs() {
+    const toast = useRef<Toast>(null);
 const [areas, setAreas] = useState<Area[]>([]); 
 const [lockers, setLockers] = useState<Locker[]>([]);
 const [compartments, setCompartments] = useState<any[]>([]); 
@@ -22,7 +24,7 @@ const [filterEmail, setFilterEmail] = useState("");
 const [filterAction, setFilterAction] = useState("");
 const [filterDateFrom, setFilterDateFrom] = useState("");
 const [filterDateTo, setFilterDateTo] = useState("");
-
+const [loading, setLoading] = useState(false);
 const [history, setHistory] = useState<any[]>([]);
 const [organizationId, setOrganizationId] = useState<string>("");
     const [page, setPage] = useState(0); 
@@ -124,17 +126,26 @@ const fetchLogs = async () => {
 
 
 const generateSignedUrl = async (path: string) => {
+  setLoading(true);
   const { data, error } = await supabase.storage
     .from("lockity-images")
-    .createSignedUrl(path, 60 * 2); 
+    .createSignedUrl(path, 60 * 2);
 
   if (error) {
     console.error("Error generating signed URL:", error.message);
+    setLoading(false);
+    toast.current?.show({
+      severity: "error",
+      summary: "Error",
+      detail: "Failed to generate image URL",
+      life: 3000,
+    });
     return;
   }
 
   setImageUrl(data.signedUrl);
   setShowImageModal(true);
+  setLoading(false);
 };
 
 
@@ -152,7 +163,8 @@ useEffect(() => {
       
       <div className="flex-1 ml-[3.6rem]  w-full">
       
-
+          {loading && <Loader />}
+<Toast ref={toast} />
  <Toolbar
           title="Logging"
           showOrganizationSelect={true}
@@ -440,6 +452,6 @@ useEffect(() => {
   </div>
 )}
 
-</div>
+    </div>
   );
 }

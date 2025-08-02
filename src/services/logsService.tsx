@@ -96,7 +96,7 @@ export const auditLogs = async (
     }
 
     export const chartmovements = async (
-      areaId: number,
+      organizationId: number,
       dateFrom: string,
       dateTo: string
     ): Promise<any> => {
@@ -104,7 +104,7 @@ export const auditLogs = async (
         dateFrom,
         dateTo,
       };
-      const response = await api.get(`${pre}areas/${areaId}/movements/chart`, { params });
+      const response = await api.get(`${pre}organizations/${organizationId}/movements/chart`, { params });
       console.log("Chart movements response:", response.data);
       return response.data;
     }
@@ -113,6 +113,7 @@ export const auditLogs = async (
       page: number,
       limit: number,
       status?: string,
+      organizationId?: string
     ): Promise<activityresponse> => {
       const params: any = {
         page,
@@ -121,6 +122,9 @@ export const auditLogs = async (
       if (status && (status === "success" || status === "failure")) {
         params.status = status;
       }
+      if (organizationId) {
+        params.organizationId = organizationId;
+      }
       const response = await api.get(`${pre}lockers/activities`, { params });
       console.log("Activities response:", response.data);
       return response.data;
@@ -128,12 +132,17 @@ export const auditLogs = async (
 
     export const noschedule = async (
       page: number,
-      limit: number
+      limit: number,
+      organizationId?: string
     ): Promise<noscheduleResponse> => {
-      const params = {
+      const params: any = {
         page,
         limit,
       };
+      if (organizationId) {
+        params.organizationId = organizationId;
+      }
+      console.log("Params for no schedule:", params);
       const response = await api.get(`${pre}lockers/no-schedules`, { params });
       console.log("No schedule response:", response.data);
       return response.data;

@@ -425,7 +425,7 @@ useEffect(() => {
           });
           return;
         }
-         const isElectron = typeof window !== "undefined" && window.navigator.userAgent.includes("Electron");
+
         if (isElectron && window.electronAPI?.publishToggleCommand) {
         console.log(selectedLocker!.locker_serial_number, userId, compartment.id, compartment.compartment_number);
         window.electronAPI?.publishToggleCommand(
