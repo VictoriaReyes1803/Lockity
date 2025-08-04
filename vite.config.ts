@@ -17,6 +17,8 @@ export default defineConfig({
       },
       srcDir: 'src',
       filename: 'firebase-messaging-sw.js',
+      
     }),
   ],
+  
 });

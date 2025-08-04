@@ -28,6 +28,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2",
+    "react-turnstile": "^1.1.4",
     "recharts": "^3.1.0",
     "vite-plugin-pwa": "^1.0.2"
   },
@@ -53,36 +54,38 @@
     "vite": "^6.3.5"
   },
   "build": {
-  "appId": "com.lockity.desktop",
-  "productName": "Lockity",
-  "directories": {
-    "buildResources": "electron/images",
-    "output": "release"
-  },
-  "files": [
-    "dist/**/*",
-    "electron/**/*",
-    "node_modules/**/*",
-    "package.json"
-  ],
-  "extraResources": [
-    {
-      "from": "electron/certs/",
-      "to": "certs",
-      "filter": ["**/*"]
+    "appId": "com.lockity.desktop",
+    "productName": "Lockity",
+    "directories": {
+      "buildResources": "electron/images",
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "electron/certs/",
+        "to": "certs",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "asar": true,
+    "win": {
+      "target": "nsis",
+      "icon": "electron/images/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "mac": {
+      "target": "dmg"
     }
-  ],
-  "asar": true,
-  "win": {
-    "target": "nsis"
   },
-  "linux": {
-    "target": "AppImage"
-  },
-  "mac": {
-    "target": "dmg"
-  }
-},
-
-  "main": "electron/main.cjs"
+  "main": "electron/main.mjs"
 }

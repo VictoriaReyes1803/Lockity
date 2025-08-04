@@ -4,6 +4,8 @@ import type { act } from "react";
 import type { LockerListResponse , ListCompartmentsResponse} from "../models/locker";
 //import type { OrganizationResponse } from "../models/organization";
 import {getApi} from "./interceptor";
+import type { Contactanos } from "../models/locker";
+
 const api = getApi("nest");
 const pre = 'api/';
 const isElectron = (): boolean => {
@@ -147,3 +149,8 @@ export const statusLocker = async (
 }
 
 
+export const contactanos = async (dataContactanos: Contactanos): Promise<any> => {
+  const response = await api.post(`${pre}contact`, dataContactanos);
+  console.log("Contactanos response:", response.data);
+  return response.data;
+}

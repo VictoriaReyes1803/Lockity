@@ -728,7 +728,9 @@ useEffect(() => {
                 start_time: `${s.startTime}:00`,
                 end_time: `${s.endTime}:00`,
                 repeat_schedule: s.repeatSchedule,
-                schedule_date: s.repeatSchedule ? null : s.scheduleDate || null,
+                schedule_date: s.repeatSchedule
+                  ? null
+                  : new Date(s.scheduleDate).toISOString().slice(0, 10),
 
               };
 
