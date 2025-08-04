@@ -14,13 +14,8 @@ export default function Dashboard() {
 		const toast = useRef<Toast>(null);
 		const [chartData, setChartData] = useState<any[]>([]);
 		const [groupBy, setGroupBy] = useState<"day" | "week" | "month" | "year">("day");
-<<<<<<< HEAD
-const [dateFrom, setDateFrom] = useState("2025-07-27");
-const [dateTo, setDateTo] = useState("2025-08-01");
-=======
 const [dateFrom, setDateFrom] = useState("2025-07-29");
 const [dateTo, setDateTo] = useState("2025-08-05");
->>>>>>> server
 
 		const [lockers, setLockers] = useState<any[]>([]);	
 		const [totalLockers, setTotalLockers] = useState(0);
