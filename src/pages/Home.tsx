@@ -37,9 +37,8 @@ const [scriptLoaded, setScriptLoaded] = useState(false);
 const [form, setForm] = useState<Contactanos>({
   name: "",
   email: "",
-  description: "",
-  captchaToken: null,
-  public_key: null
+  message: "",
+  captchaToken: null
 });
 const [sending, setSending] = useState(false);
 const [messageSent, setMessageSent] = useState(false);
@@ -54,7 +53,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   setMessageSent(false);
 
   try {
-    if (!form.name || !form.email || !form.description || !captchaToken) {
+    if (!form.name || !form.email || !form.message || !captchaToken) {
       toast.current?.show({ severity: "warn", summary: "Warning", detail: "Please fill in all fields.", life: 3000 });
       setSending(false);
       return;
@@ -64,11 +63,11 @@ const handleSubmit = async (e: React.FormEvent) => {
   setSending(false);
   return;
 }
-form.public_key = import.meta.env.VITE_SITE_KEY;
+// form.public_key = import.meta.env.VITE_SITE_KEY;
 
 
     await contactanos(form);
-    setForm({ name: "", email: "", description: "", captchaToken: null, public_key: null });
+    setForm({ name: "", email: "", message: "", captchaToken: null });
     toast.current?.show({
       severity: "success",
       summary: "Success",
@@ -287,12 +286,12 @@ useEffect(() => {
   </div>
 
   <div className="space-y-1">
-    <label htmlFor="description" className="text-sm text-gray-300">
-      Enter Description
+    <label htmlFor="message" className="text-sm text-gray-300">
+      Enter Message
     </label>
     <textarea
-      id="description"
-      value={form.description}
+      id="message"
+      value={form.message}
       onChange={handleInputChange}
       className="w-full px-4 py-2 bg-[#515355] text-white text-sm  border border-[A6A4A4] focus:outline-none focus:ring-0 focus:border-[#A3A8AF]"
       rows={4}

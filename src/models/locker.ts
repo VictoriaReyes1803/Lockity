@@ -56,7 +56,7 @@ export interface ListCompartmentsResponse {
 export interface Contactanos{
   name: string;
   email: string;
-  description: string;
+  message: string;
   captchaToken: string | null;
-  public_key: string | null;
+ 
 }

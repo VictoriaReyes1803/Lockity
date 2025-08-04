@@ -5,6 +5,7 @@ import type { LockerListResponse , ListCompartmentsResponse} from "../models/loc
 //import type { OrganizationResponse } from "../models/organization";
 import {getApi} from "./interceptor";
 import type { Contactanos } from "../models/locker";
+import { data } from "react-router-dom";
 
 const api = getApi("nest");
 const pre = 'api/';
@@ -150,7 +151,16 @@ export const statusLocker = async (
 
 
 export const contactanos = async (dataContactanos: Contactanos): Promise<any> => {
-  const response = await api.post(`${pre}contact`, dataContactanos);
+  console.log(dataContactanos);
+  const response = await api.post(
+    `${pre}contact`,
+    dataContactanos,
+    {
+      headers: {
+       "x-public-key": "(M+Gr&{VjGacz-n8w/ZU"
+      }
+    }
+  );
   console.log("Contactanos response:", response.data);
   return response.data;
 }

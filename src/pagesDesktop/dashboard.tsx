@@ -146,7 +146,7 @@ useEffect(() => {
 	</div>
 </div>
 ) : (
-	<div className="bg-white rounded-xl p-4 w-full md:w-[40%] h-[150px] flex items-center justify-center">
+	<div className="bg-white rounded-xl p-4 w-full md:w-[10%]  flex items-center justify-center">
 		<div className="text-gray-500">No lockers without assigned dates</div>
 	</div>
 )}
