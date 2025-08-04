@@ -77,8 +77,7 @@
     ],
     "asar": true,
     "win": {
-      "target": "nsis",
-      "icon": "electron/images/icon.ico"
+      "target": "nsis"
     },
     "linux": {
       "target": "AppImage"
