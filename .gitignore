@@ -28,3 +28,7 @@ dist-ssr
 release/*
 release/
 release
+
+public/downloads
+public/downloads/
+public/downloads/*
