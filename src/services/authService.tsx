@@ -49,3 +49,4 @@ export const Logout = async (): Promise<{ apiResponse: any; webLogoutResponse: a
     throw error;
   }
 };
+

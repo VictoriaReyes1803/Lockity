@@ -148,6 +148,20 @@ const generateSignedUrl = async (path: string) => {
   setLoading(false);
 };
 
+useEffect(() => {
+  const handleEsc = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setShowImageModal(false);
+      setImageUrl(null);
+      
+    }
+  };
+
+  window.addEventListener("keydown", handleEsc);
+  return () => {
+    window.removeEventListener("keydown", handleEsc);
+  };
+}, []);
 
 useEffect(() => {
   fetchLogs();

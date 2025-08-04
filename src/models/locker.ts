@@ -52,3 +52,11 @@ export interface ListCompartmentsResponse {
     success: boolean;
 
 }
+
+export interface Contactanos{
+  name: string;
+  email: string;
+  message: string;
+  captchaToken: string | null;
+ 
+}

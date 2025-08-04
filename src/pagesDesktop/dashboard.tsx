@@ -14,8 +14,13 @@ export default function Dashboard() {
 		const toast = useRef<Toast>(null);
 		const [chartData, setChartData] = useState<any[]>([]);
 		const [groupBy, setGroupBy] = useState<"day" | "week" | "month" | "year">("day");
+<<<<<<< HEAD
 const [dateFrom, setDateFrom] = useState("2025-07-27");
 const [dateTo, setDateTo] = useState("2025-08-01");
+=======
+const [dateFrom, setDateFrom] = useState("2025-07-29");
+const [dateTo, setDateTo] = useState("2025-08-05");
+>>>>>>> server
 
 		const [lockers, setLockers] = useState<any[]>([]);	
 		const [totalLockers, setTotalLockers] = useState(0);
@@ -123,26 +128,34 @@ useEffect(() => {
         <Toast ref={toast} />
 		<div className="bg-[#2E2D2D] min-h-screen w-full text-black p-5 font-['Roboto']">
 			<div className="flex flex-col md:flex-row gap-6 mb-3">
-				<div className="bg-white rounded-xl p-4  w-full md:w-[40%]">
-					<div className="flex items-center mb-1">
-						<span className="font-semibold text-lg text-black ">
-							Locker without assigned dates
-						</span>
-					</div>
-					<div className="flex gap-4 overflow-x-auto pb-2  h-[80%]">
-						{lockers.map((locker, idx) => (
-							<div
-								key={idx}
-								className="bg-[#eaeaea] text-black rounded-lg p-4 min-w-[120px] shadow"
-							>
-								<div className="font-semibold text-lg ">Locker Number: {locker.locker_number}</div>
-								<div className="text-md">Serial: {locker.locker_serial_number}</div>
-								<div className="text-md">Area: {locker.area}</div>
-								
-							</div>
-						))}
-					</div>
-				</div>
+
+{lockers.length > 0 ? (
+	<div className="bg-white rounded-xl p-4  w-full md:w-[40%]">
+		<div className="flex items-center mb-1">
+			<span className="font-semibold text-lg text-black ">
+				Locker without assigned dates
+			</span>
+	</div>
+	<div className="flex gap-4 overflow-x-auto pb-2  h-[80%]">
+		{lockers.map((locker, idx) => (
+			<div
+				key={idx}
+				className="bg-[#eaeaea] text-black rounded-lg p-4 min-w-[120px] shadow"
+			>
+				<div className="font-semibold text-lg ">Locker Number: {locker.locker_number}</div>
+				<div className="text-md">Serial: {locker.locker_serial_number}</div>
+				<div className="text-md">Area: {locker.area}</div>
+				
+			</div>
+		))}
+	</div>
+</div>
+) : (
+	<div className="bg-white rounded-xl p-4 w-full md:w-[10%]  flex items-center justify-center">
+		<div className="text-gray-500">No lockers without assigned dates</div>
+	</div>
+)}
+
 				<div className="bg-white rounded-xl p-4 flex-1 w-full md:w-[60%]">
 					<div className="flex gap-3 items-center text-center mb-2 text-black text-sm">
   <div className="flex items-center gap-2">

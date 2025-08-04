@@ -16,7 +16,7 @@ const handle = async () => {
 
   const clientId = import.meta.env.VITE_CLIENT_ID;
   const redirectUri = import.meta.env.VITE_REDIRECT_URI;
-
+console.log('url', url);
   const queryParams = new URLSearchParams({
     response_type: 'code',
     client_id: clientId,
