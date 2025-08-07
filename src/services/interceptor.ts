@@ -21,7 +21,7 @@ export const getApi = (backend: Backend): AxiosInstance => {
     const token = getEncryptedCookie("access_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log("Token in request interceptor:", token);
+     // console.log("Token in request interceptor:", token);
     }
     return config;
   });
