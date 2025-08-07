@@ -19,15 +19,9 @@ export default defineConfig({
       filename: 'firebase-messaging-sw.js',  
     }),
   ],
-   optimizeDeps: {
-    exclude: ["react/jsx-runtime"], // ⛔ evita que Vite lo intente preprocesar
-  },
   build: {
     commonjsOptions: {
-      include: [/node_modules/], // asegúrate que los módulos comunes se puedan usar
-    },
-    rollupOptions: {
-      external: ["react/jsx-runtime"], // ⛔ evita transformar esto
+      include: [/node_modules/], 
     },
   },
 });
