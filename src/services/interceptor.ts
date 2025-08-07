@@ -14,6 +14,7 @@ export const getApi = (backend: Backend): AxiosInstance => {
     headers: {
       Accept: "application/json",
     },
+   withCredentials: true
   });
 
   instance.interceptors.request.use((config) => {
