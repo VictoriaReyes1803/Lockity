@@ -17,7 +17,8 @@ import { getLockers , putSchedule} from "../services/lockersService";
 import { getAreas } from "../services/organizationsService";
 
 import { components as getComponents, updateComponent, postcomponent } from "../services/logsService"; 
-
+import { setEncryptedCookie } from "../lib/secureCookies";
+import { set } from "date-fns";
 
 
 export default function Lockers() {
@@ -84,16 +85,16 @@ const [editingMeta, setEditingMeta] = useState<{ id: number; status: string; ser
 const [compType, setCompType] = useState("");
 const [compModel, setCompModel] = useState("");
 type Pin = {
-  pinName: string;
-  pinNumber: number;
+  pin_name: string;
+  pin_number: number;
 };
 
-const [compPins, setCompPins] = useState<Pin[]>([{ pinName: "", pinNumber: 0 }]);
-const addPin = () => setCompPins([...compPins, { pinName: "", pinNumber: 0 }]);
+const [compPins, setCompPins] = useState<Pin[]>([{ pin_name: "", pin_number: 0 }]);
+const addPin = () => setCompPins([...compPins, { pin_name: "", pin_number: 0 }]);
 const removePin = (idx: number) => setCompPins(compPins.filter((_, i) => i !== idx));
 const updatePin = (idx: number, field: keyof Pin, value: string) => {
   const next = [...compPins];
-  if (field === "pinNumber") {
+  if (field === "pin_number") {
     next[idx][field] = Number(value) as Pin[typeof field];
   } else {
     next[idx][field] = value as Pin[typeof field]; 
@@ -115,6 +116,8 @@ const updatePin = (idx: number, field: keyof Pin, value: string) => {
         const data = await getLockers(page + 1, rows, organizationId, showSchedules);
         setLockers(data.data.items);
         setTotalRecords(data.data.total);
+        const locker = getEncryptedCookie("selected_locker");
+    setSelectedLocker(locker);
         console.log("Lockers loaded:", data.data.items);
       } catch (err) {
         console.error("Error loading lockers:", err);
@@ -191,6 +194,7 @@ const fetchComponents = async (serialNumber:string, compStatus:string) => {
     setLoading(true);
     const res = await getComponents(serialNumber, compStatus);
     console.log("Components response:", res);
+    setSerialNumber(res.data.serial_number);
     setComponentList(res.data.components || res || []); 
   } catch (e) {
     console.error(e);
@@ -205,7 +209,7 @@ const openAddComponent = () => {
   setEditingMeta(null);
   setCompType("");
   setCompModel("");
-  setCompPins([{ pinName: "", pinNumber: 0 }]);
+  setCompPins([{ pin_name: "", pin_number: 0 }]);
   setShowCompModal(true);
 };
 
@@ -232,6 +236,7 @@ const saveComponent = async () => {
     }
 
     if (isEditingComp && editingMeta) {
+      console.log("Updating component:", editingMeta.status);
       await updateComponent(editingMeta.id, editingMeta.status, editingMeta.serial, {
         type: compType,
         model: compModel,
@@ -251,7 +256,12 @@ const saveComponent = async () => {
     fetchComponents(serialNumber, compStatus);
   } catch (e) {
     console.error(e);
-    toast.current?.show({ severity: "error", summary: "Error", detail: "Operation failed", life: 3000 });
+    let errorDetail = "Operation failed";
+    if (typeof e === "object" && e !== null && "response" in e) {
+      const err = e as { response?: { data?: { errors?: string[] } } };
+      errorDetail = err.response?.data?.errors?.[0] || errorDetail;
+    }
+    toast.current?.show({ severity: "error", summary: "Error", detail: errorDetail, life: 3000 });
   }
 };
 
@@ -274,7 +284,16 @@ useEffect(() => {
    useEffect(() => {
       if (!organizationId || organizationId === "") return;   
     fetchLockers();
+    const locker = getEncryptedCookie("selected_locker");
+    if (locker) {
+      setSelectedLocker(locker);
+      fetchCompartments(locker.locker_id);
+      setCompStatus('active');
+    }
+
   }, [organizationId, page, rows, showSchedules]);
+
+
   useEffect(() => {
     setLoading(true);
   const orgsRaw = getEncryptedCookie("o_ae3d8f2b");
@@ -379,9 +398,16 @@ useEffect(() => {
               {lockers.map((locker) => (
                 <div
                     key={locker.locker_id}
-                    className="border border-[#959595] rounded-xl p-4 bg-[#222] shadow cursor-pointer hover:brightness-110 transition"
+                   className={`
+    border border-[#959595] rounded-xl p-4 shadow cursor-pointer transition
+    ${selectedLocker?.locker_id === locker.locker_id 
+      ? "bg-[#333] hover:brightness-110" 
+      : "bg-[#222] hover:brightness-110"
+    }
+  `}
                     onClick={() => {
                         setSelectedLocker(locker);
+                        setEncryptedCookie("selected_locker", locker);
                         fetchCompartments(locker.locker_id);
                         setCompStatus('active');
                         fetchComponents(locker.locker_serial_number, compStatus);
@@ -618,7 +644,6 @@ useEffect(() => {
               compartment.compartment_number,
               actionValue,
               'desktop'
-            
             );
 
         await fetchCompartments(selectedLocker!.locker_id);
@@ -626,8 +651,11 @@ useEffect(() => {
           severity: "success",
           summary: "Compartment Opened",
           detail: `Compartment ${compartment.compartment_number} opened successfully`,
-          life: 3000,
+          life: 2000,
         });
+            setTimeout(() => {
+          window.location.reload();
+        }, 2000);
         }
        
       } catch (err) {
@@ -660,14 +688,19 @@ useEffect(() => {
                         Update
                         </button> */}
                     </div>
+
+
+
                     ))}
-                </>
-                ) : (
-                <p className="text-gray-300">Select a locker to see compartments</p>
-                )}
 
-
-               <h5 className=" font-bold mb-2 mt-2">Components</h5>
+                     <div className="flex">
+                    <h5 className=" font-bold mb-2 mt-2">Components</h5>
+               <button
+                className="text-sm text-yellow-400 ml-4 hover:underline"
+                onClick={openAddComponent}
+                >+ Add Component</button>
+                  </div>
+               
               <div className="flex gap-2 mb-2">
 
         <select
@@ -693,7 +726,15 @@ useEffect(() => {
                 <div className="text-sm font-semibold text-white">{c.type} – {c.model}</div>
                 <div className="text-xs text-gray-300">
                   ID: {c.id ?? c.component_id} · Status: {c.status ?? c.component_status}
+                
                 </div>
+                {c.pins && c.pins.length > 0 && (
+                  <div className="text-xs text-gray-300">
+                    Pins: {c.pins.map((p: Pin) => p.pin_name).join(", ")
+                    } – Numbers: {c.pins.map((p: Pin) => p.pin_number).join(", ")}
+                  </div>
+                )}
+
               </div>
               <button
                 title="Edit"
@@ -706,6 +747,12 @@ useEffect(() => {
           ))
         )}
       </div>
+                </>
+                ) : (
+                <p className="text-gray-300">Select a locker to see compartments</p>
+                )}
+
+                 
             </div>
 
             
@@ -1064,12 +1111,8 @@ useEffect(() => {
       </div>
 
       <div className="mb-2">
-        <label className="text-sm">Type</label>
-        <input
-          value={compType}
-          onChange={(e) => setCompType(e.target.value)}
-          className="w-full border border-gray-300 rounded px-2 py-1"
-        />
+        <label className="text-sm">Type: </label>
+        <label>{compType}</label>
       </div>
 
       <div className="mb-2">
@@ -1079,6 +1122,13 @@ useEffect(() => {
           onChange={(e) => setCompModel(e.target.value)}
           className="w-full border border-gray-300 rounded px-2 py-1"
         />
+      </div>
+        <div className="mb-2">
+        <label className="text-sm">Status: </label>
+      <select value={compStatus} onChange={(e) => setCompStatus(e.target.value)} className="w-full border border-gray-300 rounded px-2 py-1">
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
       </div>
 
       <div className="mb-2">
@@ -1093,15 +1143,15 @@ useEffect(() => {
             <div key={idx} className="flex gap-2 items-center">
               <input
                 placeholder="pin_name"
-                value={p.pinName}
-                onChange={(e) => updatePin(idx, "pinName", e.target.value)}
+                value={p.pin_name}
+                onChange={(e) => updatePin(idx, "pin_name", e.target.value)}
                 className="flex-1 border border-gray-300 rounded px-2 py-1"
               />
               <input
                 type="number"
-                placeholder="pinNumber"
-                value={p.pinNumber}
-                onChange={(e) => updatePin(idx, "pinNumber", e.target.value)}
+                placeholder="pin_number"
+                value={p.pin_number}
+                onChange={(e) => updatePin(idx, "pin_number", e.target.value)}
                 className="w-24 border border-gray-300 rounded px-2 py-1"
               />
               {compPins.length > 1 && (

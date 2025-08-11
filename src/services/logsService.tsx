@@ -175,8 +175,8 @@ export const auditLogs = async (
     type: string,
     model: string,
     pins: Array<{
-      pinName: string,
-      pinNumber: number
+        pin_name: string,
+        pin_number: number
     }>
   }): Promise<void> => {
     const response = await api.put(`${pre}locker-config/update-component/`, {
@@ -200,8 +200,8 @@ export const auditLogs = async (
       type: string,
       model: string,
       pins: Array<{
-        pinName: string,
-        pinNumber: number
+        pin_name: string,
+        pin_number: number
       }>
     }
   ): Promise<void> => {
