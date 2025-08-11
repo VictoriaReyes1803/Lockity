@@ -10,7 +10,8 @@ declare global {
         serialNumber: string,
         userId: number,
         compartmentNumber: number,
-        soruce: string
+        valor: number,
+        source: string
       ) => void;
        sendNotification: (notification: FCMNotificationPayload["notification"]) => void;
     };

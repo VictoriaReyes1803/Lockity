@@ -219,6 +219,7 @@ useEffect(() => {
 <div className="flex-1 rounded-xl ">
   <div className="flex justify-between">
     <h3 className="text-xl font-bold mb-2">Areas</h3>
+    {!isElectron && (
      <button
         className="p-1 rounded-full text-white hover:brightness-90 hover:bg-[#FFD166] transition"
         onClick={() => {
@@ -230,6 +231,7 @@ useEffect(() => {
       >Add Area 
         <FontAwesomeIcon className="ml-2" icon="plus" />
       </button>
+    )}
   </div>
   
   <div className="border border-[#959595] rounded-md p-4 space-y-2">
@@ -238,6 +240,7 @@ useEffect(() => {
         <div key={area.id} className="border-b pb-1">
           <div className="flex gap-2">
           <h4 className="text-md font-medium">{area.name}</h4>
+          {!isElectron && (
       <button
         className="p-1 rounded-full text-white hover:brightness-110 hover:bg-[#555555] transition"
         onClick={() => {
@@ -249,6 +252,7 @@ useEffect(() => {
       >
         ✎
       </button>
+          )}
 
      
       </div>

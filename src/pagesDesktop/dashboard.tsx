@@ -255,7 +255,7 @@ useEffect(() => {
     <td className="py-2 px-3 w-1/5">
       <span
         className={`font-semibold text-sm flex items-center gap-1 ${
-          a.status === "Open" ? "text-red-500" : "text-[#FFD166]"
+          a.status === "failure" ? "text-red-500" : "text-[#FFD166]"
         }`}
       >
         {a.status}

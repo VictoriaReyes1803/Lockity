@@ -14,6 +14,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { Compartment } from "../models/locker";
 import { getCompartments, deleteSchedule } from "../services/lockersService";
 import { getLockers , putSchedule} from "../services/lockersService"; 
+import { getAreas } from "../services/organizationsService";
+
+import { components as getComponents, updateComponent, postcomponent } from "../services/logsService"; 
 
 
 
@@ -58,7 +61,7 @@ const [totalRecords, setTotalRecords] = useState(0);
     const [repeatSchedule, setRepeatSchedule] = useState(false);
     const [dayOfWeek, setDayOfWeek] = useState<number>(0); 
     const [showSchedules, setShowSchedules] = useState(true);
-
+    const [areas, setAreas] = useState<{ id: number; name: string; description: string }[]>([]);
     const updateSchedule = (index: number, newSchedule: typeof schedules[0]) => {
   const updated = [...schedules];
   
@@ -71,34 +74,38 @@ const removeSchedule = (index: number) => {
   setSchedules(updated);
 };
 
+const [compStatus, setCompStatus] = useState<string>("active"); 
+const [componentList, setComponentList] = useState<any[]>([]);
 
-  useEffect(() => {
-    setLoading(true);
-  const orgsRaw = getEncryptedCookie("o_ae3d8f2b");
-  const selectedOrg = getEncryptedCookie("s_12be90dd");
+const [showCompModal, setShowCompModal] = useState(false);
+const [isEditingComp, setIsEditingComp] = useState(false);
+const [editingMeta, setEditingMeta] = useState<{ id: number; status: string; serial: string } | null>(null);
 
-  if (orgsRaw && selectedOrg) {
-    setOrganizationId(selectedOrg);
-    
-    setLoading(false);
+const [compType, setCompType] = useState("");
+const [compModel, setCompModel] = useState("");
+type Pin = {
+  pinName: string;
+  pinNumber: number;
+};
+
+const [compPins, setCompPins] = useState<Pin[]>([{ pinName: "", pinNumber: 0 }]);
+const addPin = () => setCompPins([...compPins, { pinName: "", pinNumber: 0 }]);
+const removePin = (idx: number) => setCompPins(compPins.filter((_, i) => i !== idx));
+const updatePin = (idx: number, field: keyof Pin, value: string) => {
+  const next = [...compPins];
+  if (field === "pinNumber") {
+    next[idx][field] = Number(value) as Pin[typeof field];
+  } else {
+    next[idx][field] = value as Pin[typeof field]; 
   }
-// else {
-    
-//     toast.current?.show({
-//       severity: "error",
-//      summary: "Error",
-//      detail: "Error loading organization data, please.",
-//       life: 3000,
-//     });
-//   }
-
-}, []);
+  setCompPins(next);
+};
 
 
-   useEffect(() => {
-      if (!organizationId || organizationId === "") return;   
-    fetchLockers();
-  }, [organizationId, page, rows, showSchedules]);
+
+
+
+
 
 
  const fetchLockers = async () => {
@@ -151,7 +158,144 @@ useEffect(() => {
     setLoading(false);
   }
 };
+const fetchAreas = async () => {
+  try {
+    setLoading(true);
+    const data = await getAreas(organizationId);
+    setAreas(data.data.items);
+    console.log("Areas loaded:", data.data.items);
+  } catch (err) {
+    console.error("Error loading areas:", err);
+    toast.current?.show({
+      severity: "error",
+      summary: "Error",
+      detail: "Could not load areas.",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
+
+
+
+
+
+
+
+
+
+const fetchComponents = async (serialNumber:string, compStatus:string) => {
+  if (!serialNumber || !compStatus) return;
+  try {
+    setLoading(true);
+    const res = await getComponents(serialNumber, compStatus);
+    console.log("Components response:", res);
+    setComponentList(res.data.components || res || []); 
+  } catch (e) {
+    console.error(e);
+    toast.current?.show({ severity: "error", summary: "Error", detail: "Failed to fetch components", life: 3000 });
+  } finally {
+    setLoading(false);
+  }
+};
+
+const openAddComponent = () => {
+  setIsEditingComp(false);
+  setEditingMeta(null);
+  setCompType("");
+  setCompModel("");
+  setCompPins([{ pinName: "", pinNumber: 0 }]);
+  setShowCompModal(true);
+};
+
+const openEditComponent = (c: any) => {
+  setIsEditingComp(true);
+  setEditingMeta({ id: c.id ?? c.component_id, status: c.status ?? c.component_status, serial: serialNumber });
+  setCompType(c.type || "");
+  setCompModel(c.model || "");
+  setCompPins(
+    c.pins?.map((p: any) => ({ pin_name: p.pin_name, pin_number: Number(p.pin_number) })) || [{ pin_name: "", pin_number: 0 }]
+  );
+  setShowCompModal(true);
+};
+
+const saveComponent = async () => {
+  try {
+    if (!serialNumber) {
+      toast.current?.show({ severity: "warn", summary: "Validation", detail: "Provide a serial number", life: 2500 });
+      return;
+    }
+    if (!compType || !compModel) {
+      toast.current?.show({ severity: "warn", summary: "Validation", detail: "Type and model are required", life: 2500 });
+      return;
+    }
+
+    if (isEditingComp && editingMeta) {
+      await updateComponent(editingMeta.id, editingMeta.status, editingMeta.serial, {
+        type: compType,
+        model: compModel,
+        pins: compPins,
+      });
+      toast.current?.show({ severity: "success", summary: "Updated", detail: "Component updated", life: 2000 });
+    } else {
+      await postcomponent(serialNumber, {
+        type: compType,
+        model: compModel,
+        pins: compPins,
+      });
+      toast.current?.show({ severity: "success", summary: "Created", detail: "Component added", life: 2000 });
+    }
+
+    setShowCompModal(false);
+    fetchComponents(serialNumber, compStatus);
+  } catch (e) {
+    console.error(e);
+    toast.current?.show({ severity: "error", summary: "Error", detail: "Operation failed", life: 3000 });
+  }
+};
+
+
+
+
+
+useEffect(() => {
+  if (showModal && !scheduleBeingEdited && organizationId) {
+    fetchAreas(); 
+  }
+}, [showModal, scheduleBeingEdited, organizationId]);
+
+useEffect(() => {
+  if (selectedLocker) {
+    fetchComponents(selectedLocker.locker_serial_number, compStatus);
+  }
+}, [selectedLocker?.locker_serial_number, compStatus]);
+
+   useEffect(() => {
+      if (!organizationId || organizationId === "") return;   
+    fetchLockers();
+  }, [organizationId, page, rows, showSchedules]);
+  useEffect(() => {
+    setLoading(true);
+  const orgsRaw = getEncryptedCookie("o_ae3d8f2b");
+  const selectedOrg = getEncryptedCookie("s_12be90dd");
+
+  if (orgsRaw && selectedOrg) {
+    setOrganizationId(selectedOrg);
+    
+    setLoading(false);
+  }
+// else {
+    
+//     toast.current?.show({
+//       severity: "error",
+//      summary: "Error",
+//      detail: "Error loading organization data, please.",
+//       life: 3000,
+//     });
+//   }
+
+}, []);
 
   return (
     <div className="flex h-screen bg-[#2e2d2d] text-white font-sans">
@@ -239,6 +383,8 @@ useEffect(() => {
                     onClick={() => {
                         setSelectedLocker(locker);
                         fetchCompartments(locker.locker_id);
+                        setCompStatus('active');
+                        fetchComponents(locker.locker_serial_number, compStatus);
                     }}
                     >
                     <h3 className="text-xl font-bold">{locker.locker_serial_number}</h3>
@@ -337,7 +483,7 @@ useEffect(() => {
                       </ul>
                       </div>
                       )}
-
+                  {!isElectron && (
                     <div className="flex justify-end">
                         <button className="bg-[#FFD166] text-black px-4 py-1 rounded-full font-semibold hover:brightness-90 transition" 
                         onClick={() => {
@@ -372,6 +518,7 @@ useEffect(() => {
                           </button>
 
                     </div>
+                  )}
                     </div>
 
               ))}
@@ -386,6 +533,13 @@ useEffect(() => {
                     <h4 className="font-bold mb-2">
                     Locker {selectedLocker.locker_number}
                     </h4>
+
+
+
+
+
+
+
                     {loading && <Loader />}
                     {compartments.length === 0 && !loading && (
                     <p className="text-gray-300">No compartments found.</p>
@@ -412,7 +566,7 @@ useEffect(() => {
                             </div>
                        <span
   onClick={async () => {
-    if (compartment.status.toLowerCase() === "closed") {
+   
       try {
         const user = getEncryptedCookie("u_7f2a1e3c");
         const userId = user ? JSON.parse(user).id : null;
@@ -425,14 +579,46 @@ useEffect(() => {
           });
           return;
         }
+          const now = new Date();
+      const todayDayOfWeek = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][now.getDay()];
+      const currentTime = now.toTimeString().slice(0, 5);
+
+      const hasScheduleToday =
+        selectedLocker?.schedules?.some((s) => {
+          const isRepeatToday = s.repeat_schedule && s.day_of_week === todayDayOfWeek;
+          const isSpecificDateToday =
+            !s.repeat_schedule &&
+            s.schedule_date &&
+            new Date(s.schedule_date).toISOString().slice(0, 10) ===
+              now.toISOString().slice(0, 10);
+
+          if (isRepeatToday || isSpecificDateToday) {
+        
+            return currentTime >= s.start_time.slice(0, 5) && currentTime <= s.end_time.slice(0, 5);
+          }
+          return false;
+        }) ?? false;
+
+      if (!hasScheduleToday) {
+        toast.current?.show({
+          severity: "warn",
+          summary: "Access Denied",
+          detail: "This locker has no active schedule for today.",
+          life: 3000,
+        });
+        return;
+      }
 
         if (isElectron && window.electronAPI?.publishToggleCommand) {
-        console.log(selectedLocker!.locker_serial_number, userId, compartment.id, compartment.compartment_number);
+            const actionValue = compartment.status.toLowerCase() === "closed" ? 1 : 0;
+        console.log(selectedLocker!.locker_serial_number, userId, compartment.id, compartment.compartment_number, actionValue);
         window.electronAPI?.publishToggleCommand(
               selectedLocker!.locker_serial_number,
               userId,
               compartment.compartment_number,
+              actionValue,
               'desktop'
+            
             );
 
         await fetchCompartments(selectedLocker!.locker_id);
@@ -453,7 +639,7 @@ useEffect(() => {
         });
       }
     }
-  }}
+  }
   className={`
     text-xs font-bold px-3 py-1 rounded-full cursor-pointer
     ${
@@ -479,8 +665,53 @@ useEffect(() => {
                 ) : (
                 <p className="text-gray-300">Select a locker to see compartments</p>
                 )}
+
+
+               <h5 className=" font-bold mb-2 mt-2">Components</h5>
+              <div className="flex gap-2 mb-2">
+
+        <select
+        value={compStatus}
+        onChange={(e) => setCompStatus(e.target.value)}
+        className="bg-gray-300 border border-gray-300 rounded px-2 py-[3px] text-xs w-[35%] text-black"
+        >
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+   
+      </div>
+       <div className="max-h-40 overflow-auto pr-1">
+        {componentList.length === 0 ? (
+          <div className="text-xs text-gray-500">No components</div>
+        ) : (
+          componentList.map((c, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between border-b border-[#f0f0f0] py-2"
+            >
+              <div className="text-black">
+                <div className="text-sm font-semibold text-white">{c.type} – {c.model}</div>
+                <div className="text-xs text-gray-300">
+                  ID: {c.id ?? c.component_id} · Status: {c.status ?? c.component_status}
+                </div>
+              </div>
+              <button
+                title="Edit"
+                onClick={() => openEditComponent(c)}
+                className="text-sm px-2 py-[3px] rounded hover:bg-[#f4f4f4]"
+              >
+                ✎
+              </button>
             </div>
+          ))
+        )}
+      </div>
             </div>
+
+            
+            </div>
+
+
 
           </div>
         </div>
@@ -520,7 +751,7 @@ useEffect(() => {
       className="w-full bg-[#444] p-2 border rounded mb-2"
     >
       <option value="">Select area</option>
-      {updateAreas.map((area) => (
+      {areas.map((area) => (
         <option key={area.id} value={area.id}>
           {area.name} – {area.description}
         </option>
@@ -822,6 +1053,87 @@ useEffect(() => {
               </div>
             )}
 
+
+
+
+{showCompModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-gray-500 rounded-xl p-5 w-[420px] max-h-[90vh] overflow-y-auto text-black">
+      <div className="text-lg font-semibold mb-3">
+        {isEditingComp ? "Update Component" : "Add Component"}
+      </div>
+
+      <div className="mb-2">
+        <label className="text-sm">Type</label>
+        <input
+          value={compType}
+          onChange={(e) => setCompType(e.target.value)}
+          className="w-full border border-gray-300 rounded px-2 py-1"
+        />
+      </div>
+
+      <div className="mb-2">
+        <label className="text-sm">Model</label>
+        <input
+          value={compModel}
+          onChange={(e) => setCompModel(e.target.value)}
+          className="w-full border border-gray-300 rounded px-2 py-1"
+        />
+      </div>
+
+      <div className="mb-2">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">Pins</label>
+          <button className="text-xs px-2 py-[3px] rounded bg-[#FFD166]" onClick={addPin}>
+            + Add pin
+          </button>
+        </div>
+        <div className="space-y-2 mt-2">
+          {compPins.map((p, idx) => (
+            <div key={idx} className="flex gap-2 items-center">
+              <input
+                placeholder="pin_name"
+                value={p.pinName}
+                onChange={(e) => updatePin(idx, "pinName", e.target.value)}
+                className="flex-1 border border-gray-300 rounded px-2 py-1"
+              />
+              <input
+                type="number"
+                placeholder="pinNumber"
+                value={p.pinNumber}
+                onChange={(e) => updatePin(idx, "pinNumber", e.target.value)}
+                className="w-24 border border-gray-300 rounded px-2 py-1"
+              />
+              {compPins.length > 1 && (
+                <button
+                  className="text-xs px-2 py-[3px] rounded bg-red-100 text-red-600"
+                  onClick={() => removePin(idx)}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-2 mt-4">
+        <button
+          className="px-3 py-1 rounded bg-gray-200"
+          onClick={() => setShowCompModal(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className="px-3 py-1 rounded bg-[#2e2d2d] text-white"
+          onClick={saveComponent}
+        >
+          {isEditingComp ? "Update" : "Create"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       </div>
     </div>

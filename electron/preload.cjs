@@ -36,15 +36,17 @@ const connectToMQTT = () => {
 contextBridge.exposeInMainWorld("electronAPI", {
   sendNotification: (notification) => ipcRenderer.send("show-notification", notification),
 
-  publishToggleCommand: (serial, userId, drawer) => {
+  publishToggleCommand: (serial, userId, drawer,valorr, source) => {
     const client = connectToMQTT();
     const topic = `${serial}/command/toggle`;
     const payload = JSON.stringify({
       id_usuario: userId.toString(),
       id_drawer: drawer.toString(),
-      valor: 1,
+      valor: valorr,
+      source: source
     });
     console.log("📡 Enviando comando MQTT:", topic, payload);
     client.publish(topic, payload);
   },
 });
+

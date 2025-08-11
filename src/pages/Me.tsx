@@ -28,8 +28,8 @@ export default function UserInformation() {
         const user = await Me();
         console.log("User data:", user.data);
         if (user?.data) {
-  setForm(user.data);
-}
+            setForm(user.data);
+          }
       } catch (err) {
          let message = "Failed to fetch user data.";
       if (
@@ -99,13 +99,16 @@ if (!emailRegex.test(form.email.trim())) {
   try {
     const updated = await UpdateUser(form);
 
-    window.location.reload();
+   
     toast.current?.show({
       severity: 'success',
       summary: 'UpdateF Successful',
       detail: updated.message || 'Your information has been updated successfully.',
       life: 3000
     });
+    setTimeout(() => {
+      window.location.reload();   
+    }, 2000); 
    
   
   } catch (err) {

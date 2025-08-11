@@ -28,7 +28,7 @@ const Toolbar = ({ title, onChangeOrganization, showOrganizationSelect = false }
         if (showOrganizationSelect) {
 
           const storedOrganizations = getEncryptedCookie("o_ae3d8f2b");
-          console.log("Stored organizations:", storedOrganizations);
+          //console.log("Stored organizations:", storedOrganizations);
           const storedSelectedOrg = getEncryptedCookie("s_12be90dd");
 
           if (storedOrganizations) {

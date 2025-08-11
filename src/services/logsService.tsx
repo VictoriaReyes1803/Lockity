@@ -142,8 +142,77 @@ export const auditLogs = async (
       if (organizationId) {
         params.organizationId = organizationId;
       }
-      console.log("Params for no schedule:", params);
+      //console.log("Params for no schedule:", params);
       const response = await api.get(`${pre}lockers/no-schedules`, { params });
-      console.log("No schedule response:", response.data);
+      //console.log("No schedule response:", response.data);
       return response.data;
     };
+
+    export const components = async (
+      serialNumber: string,
+      status: string
+    ): Promise<any> => {
+      const headers = {
+    "x-iot-key": import.meta.env.VITE_x_iot_key,
+  };
+     console.log("Headers:", headers);
+      const response = await api.get(
+        `${pre}locker-config/components/${serialNumber}/${status}`,
+        {
+          headers
+        }
+      );
+      console.log("Components responseeee:", response.data);
+     
+      return response.data;
+    };
+
+    export const updateComponent = async (
+      old_component_id:number,
+      old_component_status:string,
+      serial_number:string,
+      new_component: {
+    type: string,
+    model: string,
+    pins: Array<{
+      pinName: string,
+      pinNumber: number
+    }>
+  }): Promise<void> => {
+    const response = await api.put(`${pre}locker-config/update-component/`, {
+      old_component_id,
+      old_component_status,
+      serial_number,
+      new_component
+    },
+   {
+          headers: {
+            "x-iot-key": import.meta.env.VITE_x_iot_key,
+          },
+        });
+    console.log("Update component response:", response.data);
+    return response.data;
+  };
+
+  export const postcomponent = async (
+    serial_number: string,
+    component: {
+      type: string,
+      model: string,
+      pins: Array<{
+        pinName: string,
+        pinNumber: number
+      }>
+    }
+  ): Promise<void> => {
+    const response = await api.post(`${pre}locker-config/add-component/`, {
+      serial_number,
+      component
+    },
+   {headers: {
+            "x-iot-key": import.meta.env.VITE_x_iot_key,
+          },
+        });
+    console.log("Post component response:", response.data);
+    return response.data;
+  };
