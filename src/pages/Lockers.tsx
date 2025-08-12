@@ -37,6 +37,7 @@ const [totalRecords, setTotalRecords] = useState(0);
     const [selectedLocker, setSelectedLocker] = useState<Locker | null>(null);
     const [updateAreas, setUpdateAreas] = useState<{ id: number; name: string; description: string }[]>([]);
     const [addSchedule, setAddSchedule] = useState(false);
+    const [old_status, setOldStatus] = useState<string>("replaced");
     const [isEditMode, setIsEditMode] = useState(false);
     const [schedules, setSchedules] = useState([
   {
@@ -207,7 +208,7 @@ const fetchComponents = async (serialNumber:string, compStatus:string) => {
 const openAddComponent = () => {
   setIsEditingComp(false);
   setEditingMeta(null);
-  setCompType("");
+  setCompType("led");
   setCompModel("");
   setCompPins([{ pin_name: "", pin_number: 0 }]);
   setShowCompModal(true);
@@ -236,8 +237,8 @@ const saveComponent = async () => {
     }
 
     if (isEditingComp && editingMeta) {
-      console.log("Updating component:", editingMeta.status);
-      await updateComponent(editingMeta.id, editingMeta.status, editingMeta.serial, {
+      console.log("Updating component:", old_status);
+      await updateComponent(editingMeta.id, old_status, editingMeta.serial, {
         type: compType,
         model: compModel,
         pins: compPins,
@@ -699,18 +700,21 @@ useEffect(() => {
                 className="text-sm text-yellow-400 ml-4 hover:underline"
                 onClick={openAddComponent}
                 >+ Add Component</button>
-                  </div>
-               
-              <div className="flex gap-2 mb-2">
 
-        <select
+                    <select
         value={compStatus}
         onChange={(e) => setCompStatus(e.target.value)}
-        className="bg-gray-300 border border-gray-300 rounded px-2 py-[3px] text-xs w-[35%] text-black"
+        className="bg-gray-300 border mb-2 mt-2 ml-4 border-gray-300 rounded px-2 py-[3px] text-xs w-[25%] text-black"
         >
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
+                  </div>
+               
+               
+              <div className="flex gap-2 mb-2">
+
+    
    
       </div>
        <div className="max-h-40 overflow-auto pr-1">
@@ -1104,16 +1108,31 @@ useEffect(() => {
 
 
 {showCompModal && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-gray-500 rounded-xl p-5 w-[420px] max-h-[90vh] overflow-y-auto text-black">
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-[#252525] rounded-xl p-6 text-white w-[400px] max-h-[90vh] overflow-y-auto">
       <div className="text-lg font-semibold mb-3">
         {isEditingComp ? "Update Component" : "Add Component"}
       </div>
-
+  {isEditingComp &&
+      (
       <div className="mb-2">
         <label className="text-sm">Type: </label>
         <label>{compType}</label>
       </div>
+      )}
+
+      {!isEditingComp &&
+      (
+        <div className="mb-2">
+          <label className="text-sm">Type: </label>
+         <select value={compType} onChange={(e) => setCompType(e.target.value)}>
+          <option value="led">LED</option>
+          <option value="buzzer">Buzzer</option>
+          <option value="servo">Servo</option>
+         </select>
+        </div>
+      )
+      }
 
       <div className="mb-2">
         <label className="text-sm">Model</label>
@@ -1125,8 +1144,8 @@ useEffect(() => {
       </div>
         <div className="mb-2">
         <label className="text-sm">Status: </label>
-      <select value={compStatus} onChange={(e) => setCompStatus(e.target.value)} className="w-full border border-gray-300 rounded px-2 py-1">
-        <option value="active">Active</option>
+      <select value={old_status} onChange={(e) => setOldStatus(e.target.value)} className="w-full border border-gray-300 rounded px-2 py-1">
+        <option value="replaced">Replaced</option>
         <option value="inactive">Inactive</option>
       </select>
       </div>
@@ -1134,7 +1153,7 @@ useEffect(() => {
       <div className="mb-2">
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Pins</label>
-          <button className="text-xs px-2 py-[3px] rounded bg-[#FFD166]" onClick={addPin}>
+          <button className="text-xs text-black  px-2 py-[3px] rounded bg-[#FFD166]" onClick={addPin}>
             + Add pin
           </button>
         </div>
@@ -1169,13 +1188,13 @@ useEffect(() => {
 
       <div className="flex justify-end gap-2 mt-4">
         <button
-          className="px-3 py-1 rounded bg-gray-200"
+          className="px-3 py-1 rounded  bg-[#2e2d2d]"
           onClick={() => setShowCompModal(false)}
         >
           Cancel
         </button>
         <button
-          className="px-3 py-1 rounded bg-[#2e2d2d] text-white"
+          className="px-3 py-1 rounded bg-gray-200 text-black"
           onClick={saveComponent}
         >
           {isEditingComp ? "Update" : "Create"}
