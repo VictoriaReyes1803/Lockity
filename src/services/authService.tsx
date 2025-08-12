@@ -33,6 +33,10 @@ export const Logout = async (): Promise<{ apiResponse: any; webLogoutResponse: a
     Cookies.remove("access_token");
     Cookies.remove("oauth_state");
     Cookies.remove("pkce_code_verifier");
+    Cookies.remove("u_7f2a1e3c");
+    Cookies.remove("s_12be90dd");
+    Cookies.remove("o_ae3d8f2b")
+    Cookies.remove("selected_locker");
     
 
     const webLogoutResponseRaw = await fetch(`${import.meta.env.VITE_BACKEND_URL}web-logout`, {

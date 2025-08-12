@@ -22,6 +22,8 @@ export default function CreateOrganization() {
   const [showWifiModal, setShowWifiModal] = useState(false);
 
 useEffect(() => {
+  let intervalId: NodeJS.Timeout;
+
   const checkLocker = async () => {
     setLoading(true);
     try {
@@ -73,6 +75,11 @@ useEffect(() => {
   };
 
   checkLocker();
+  intervalId = setInterval(checkLocker, 5000);
+
+  return () => {
+    clearInterval(intervalId);
+  };
 }, [navigate]);
 
 

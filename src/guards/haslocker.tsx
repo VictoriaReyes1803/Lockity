@@ -19,6 +19,7 @@ export default function Haslocker({ children }: LockerGuardProps) {
       try {
         const result = await haslocker();
         console.log("Locker check result:", result);
+        setEncryptedCookie("has_lockers", result ? "true" : "false");
         if (!result) {
           navigate("/welcome", { replace: true });
           return;

@@ -26,6 +26,7 @@ const isElectron = typeof window !== "undefined" && window.navigator.userAgent.i
 
 const [rows, setRows] = useState(10); 
 const [totalRecords, setTotalRecords] = useState(0); 
+const [togglingId, setTogglingId] = useState<number | null>(null);
 
   const toast = useRef<Toast>(null);
     const [organizationId, setOrganizationId] = useState<string>("");
@@ -39,6 +40,7 @@ const [totalRecords, setTotalRecords] = useState(0);
     const [addSchedule, setAddSchedule] = useState(false);
     const [old_status, setOldStatus] = useState<string>("replaced");
     const [isEditMode, setIsEditMode] = useState(false);
+    const [cooldown, setCooldown] = useState(false);
     const [schedules, setSchedules] = useState([
   {
     startTime: "",
@@ -145,12 +147,12 @@ useEffect(() => {
   };
 }, []);
 
-  const fetchCompartments = async (lockerId: number) => {
+const fetchCompartments = async (lockerId: number, opts?: { silent?: boolean }) => {
+  const silent = opts?.silent === true;
   try {
-    setLoading(true);
+    if (!silent) setLoading(true);
     const data = await getCompartments(lockerId);
     setCompartments(data.data.items);
-    console.log("Compartments loaded:", data.data.items);
   } catch (err) {
     console.error("Error loading compartments:", err);
     toast.current?.show({
@@ -159,9 +161,10 @@ useEffect(() => {
       detail: "Could not load compartments.",
     });
   } finally {
-    setLoading(false);
+    if (!silent) setLoading(false);
   }
 };
+
 const fetchAreas = async () => {
   try {
     setLoading(true);
@@ -235,9 +238,14 @@ const saveComponent = async () => {
       toast.current?.show({ severity: "warn", summary: "Validation", detail: "Type and model are required", life: 2500 });
       return;
     }
+    if (compPins.some((p) => !p.pin_name || p.pin_number < 2 || p.pin_number > 255)) {
+      toast.current?.show({ severity: "warn", summary: "Validation", detail: "Invalid pin configuration max 255", life: 2500 });
+      return;
+    }
 
     if (isEditingComp && editingMeta) {
       console.log("Updating component:", old_status);
+      console.log(editingMeta)
       await updateComponent(editingMeta.id, old_status, editingMeta.serial, {
         type: compType,
         model: compModel,
@@ -593,8 +601,10 @@ useEffect(() => {
                             </div>
                        <span
   onClick={async () => {
+    if (loading) return;
    
       try {
+        setLoading(true);
         const user = getEncryptedCookie("u_7f2a1e3c");
         const userId = user ? JSON.parse(user).id : null;
         if (!userId) {
@@ -637,6 +647,7 @@ useEffect(() => {
       }
 
         if (isElectron && window.electronAPI?.publishToggleCommand) {
+          
             const actionValue = compartment.status.toLowerCase() === "closed" ? 1 : 0;
         console.log(selectedLocker!.locker_serial_number, userId, compartment.id, compartment.compartment_number, actionValue);
         window.electronAPI?.publishToggleCommand(
@@ -646,18 +657,19 @@ useEffect(() => {
               actionValue,
               'desktop'
             );
+            
+        await fetchCompartments(selectedLocker!.locker_id, { silent: true });
 
-        await fetchCompartments(selectedLocker!.locker_id);
         toast.current?.show({
           severity: "success",
           summary: "Compartment Opened",
           detail: `Compartment ${compartment.compartment_number} opened successfully`,
           life: 2000,
         });
-            setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-        }
+
+        setTimeout(() => setLoading(false), 2000);
+
+      }
        
       } catch (err) {
         console.error("Error toggling compartment:", err);
@@ -669,17 +681,25 @@ useEffect(() => {
       }
     }
   }
-  className={`
-    text-xs font-bold px-3 py-1 rounded-full cursor-pointer
+className={`
+    text-xs font-bold px-3 py-1 rounded-full cursor-pointer flex items-center justify-center min-w-[70px]
     ${
-      compartment.status.toLowerCase() === "open"
+      togglingId === compartment.compartment_id
+        ? "bg-gray-400 text-white cursor-not-allowed"
+        : compartment.status.toLowerCase() === "open"
         ? "bg-[#41b883] text-white"
         : "bg-gray-500 text-white hover:bg-gray-400"
     }
   `}
-  title={compartment.status.toLowerCase() === "closed" ? "Click to open" : ""}
+  title={
+    togglingId === compartment.compartment_id
+      ? "Processing..."
+      : compartment.status.toLowerCase() === "closed"
+      ? "Click to open"
+      : ""
+  }
 >
-  {compartment.status.toUpperCase()}
+ {loading ? <Loader /> : compartment.status.toUpperCase()}
 </span>
 
 
@@ -694,7 +714,9 @@ useEffect(() => {
 
                     ))}
 
-                     <div className="flex">
+                    {isElectron && ( 
+                      <div>
+                    <div className="flex">
                     <h5 className=" font-bold mb-2 mt-2">Components</h5>
                <button
                 className="text-sm text-yellow-400 ml-4 hover:underline"
@@ -707,7 +729,7 @@ useEffect(() => {
         className="bg-gray-300 border mb-2 mt-2 ml-4 border-gray-300 rounded px-2 py-[3px] text-xs w-[25%] text-black"
         >
           <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
+          <option value="replaced">Replaced</option>
         </select>
                   </div>
                
@@ -751,15 +773,17 @@ useEffect(() => {
           ))
         )}
       </div>
+      </div>
+     )} 
+      
                 </>
                 ) : (
                 <p className="text-gray-300">Select a locker to see compartments</p>
                 )}
-
                  
             </div>
 
-            
+       
             </div>
 
 
@@ -1142,13 +1166,18 @@ useEffect(() => {
           className="w-full border border-gray-300 rounded px-2 py-1"
         />
       </div>
+        {isEditingComp && 
+          (
         <div className="mb-2">
+        
         <label className="text-sm">Status: </label>
       <select value={old_status} onChange={(e) => setOldStatus(e.target.value)} className="w-full border border-gray-300 rounded px-2 py-1">
         <option value="replaced">Replaced</option>
-        <option value="inactive">Inactive</option>
+       
       </select>
+     
       </div>
+       )}
 
       <div className="mb-2">
         <div className="flex items-center justify-between">
@@ -1169,6 +1198,8 @@ useEffect(() => {
               <input
                 type="number"
                 placeholder="pin_number"
+                max={255}
+                min={2}
                 value={p.pin_number}
                 onChange={(e) => updatePin(idx, "pin_number", e.target.value)}
                 className="w-24 border border-gray-300 rounded px-2 py-1"
