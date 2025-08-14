@@ -49,4 +49,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     client.publish(topic, payload);
   },
 });
-
+contextBridge.exposeInMainWorld("fcmDesktop", {
+  onRegistered: (cb) => ipcRenderer.on("push-receiver-registered", (_e, t) => cb(t)),
+  onNotification: (cb) => ipcRenderer.on("push-receiver-notification", (_e, n) => cb(n)),
+  getStoredToken: () => ipcRenderer.invoke("getFCMToken"),
+});

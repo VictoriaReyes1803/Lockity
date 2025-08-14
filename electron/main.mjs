@@ -1,11 +1,26 @@
 import { app, BrowserWindow, ipcMain, Notification } from "electron";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+// import setupPushReceiver from "electron-push-receiver";
+import Store from "electron-store";
+
+// 1) IMPORT del push receiver (algunas versiones exportan default, otras named)
+import * as EPR from "electron-push-receiver";
+const setupPushReceiver =
+  (EPR && (EPR.default || EPR.setup)) ? (EPR.default || EPR.setup) : (EPR);
+
+
+
+
 import Store from "electron-store";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const preloadPath = join(__dirname, "preload.cjs");
+const swPath = join(__dirname, "firebase-messaging-sw.js");
+console.log("[PUSH] typeof setupPR:", typeof setupPR);
+console.log("[PUSH] SW exists?", fs.existsSync(swPath), "->", swPath);
+
 app.setAppUserModelId("com.lockity.app"); 
 
 const store = new Store();
@@ -25,32 +40,16 @@ function createWindow() {
   });
 
   win.loadURL("http://localhost:5173");
+try {
+  if (fs.existsSync(swPath)) {
+    setupPR(win.webContents, swPath);   // preferible si tu versión lo acepta
+  } else {
+    setupPR(win.webContents);           // fallback
+  }} catch (e){
+    console.error("[PUSH] Error al configurar el Service Worker:", e);
+  }
+  setupPushReceiver(win.webContents, swPath);
 
-
-  setupPushReceiver(win.webContents);
-
-  // ───────── Eventos del receptor ─────────
-  // Token FCM generado
-  ipcMain.on("push-receiver-registered", (_e, token) => {
-    console.log("✅ FCM token (Electron):", token);
-    store.set("fcm_token", token);
-    // si quieres, envíalo a tu backend para poder enviar a este desktop
-  });
-
-  // Notificación recibida
-  ipcMain.on("push-receiver-notification", (_e, notif) => {
-    // notif.notification es el objeto con title/body/icon típico de FCM
-    const n = notif?.notification || notif || {};
-    const title = n.title || "Lockity";
-    const body  = n.body  || "";
-    const icon  = n.icon  || join(__dirname, "images", "logosin.png");
-    new Notification({ title, body, icon }).show();
-
-    // (opcional) confirmar recepción si tu backend lo requiere
-    // _e.sender.send('push-receiver-notification-handled', notif);
-  });
-
-  
   win.webContents.on("will-navigate", (event, url) => {
     console.log("navigating to:", url);
     if (url.includes("/users")) {
@@ -59,33 +58,50 @@ function createWindow() {
     }
   });
 
+
+  ipcMain.on("push-receiver-registered", (_e, token) => {
+    console.log("✅ FCM token (Electron):", token);
+    store.set("fcm_token", token);
+    // Si prefieres que el renderer lo registre en tu backend:
+    win.webContents.send("push-receiver-registered", token);
+  });
+
+  // Notificación recibida
+  ipcMain.on("push-receiver-notification", (_e, notif) => {
+    console.log("🔔 push-receiver-notification:", notif);
+    const n = notif?.notification || notif || {};
+    new Notification({
+      title: n.title || "Lockity",
+      body:  n.body  || "",
+      icon:  n.icon  || join(__dirname, "images", "logosin.png"),
+    }).show();
+
+    // También al renderer si quieres mostrar UI
+    win.webContents.send("push-receiver-notification", notif);
+  });
+
   ipcMain.on("push-receiver-serviceWorkerMessage", (_e, msg) => {
     console.log("ℹ️ SW message:", msg);
   });
-
-  // Errores del receiver
   ipcMain.on("push-receiver-error", (_e, err) => {
     console.error("❌ push-receiver-error:", err);
   });
 
-  win.once("ready-to-show", () => win.show());
-
+  // 👇 Vuelve a habilitar este handler, tu renderer lo usa
+  ipcMain.on("show-notification", (_event, notification) => {
+    const { title = "Notificación", body = "", image } = notification || {};
+    new Notification({
+      title, body,
+      icon: image || join(__dirname, "images", "logosin.png"),
+    }).show();
+  });
 }
 
 
 
+app.whenReady().then(createWindow);
+app.on("window-all-closed", () => { if (process.platform !== "darwin") app.quit(); });
 
-app.whenReady().then(() => {
-  createWindow();
-
-  app.on("activate", function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
-
-app.on("window-all-closed", function () {
-  if (process.platform !== "darwin") app.quit();
-});
 
 // ipcMain.on("show-notification", (_event, notification) => {
 //   console.log("🔔 Mostrando notificación:", notification);
