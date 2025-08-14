@@ -10,13 +10,15 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_APP_ID,
 };
 
+
+
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
-onBackgroundMessage(messaging, (payload) => {
-  const { title, body } = payload.notification || {};
-  self.registration.showNotification(title || 'Notification', {
-    body,
-    icon: '/logosin.svg',
-  });
+messaging.onBackgroundMessage((payload) => {
+  const n = payload.notification || {};
+  const title = n.title || "Lockity";
+  const body  = n.body  || "";
+  const icon  = n.icon  || "/icons/icon-192x192.png";
+  self.registration.showNotification(title, { body, icon });
 });

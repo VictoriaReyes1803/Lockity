@@ -1,4 +1,4 @@
-const { contextBridge } = require("electron");
+const { contextBridge, ipcRenderer } = require("electron");
 const fs = require("fs");
 // const mqtt = require("mqtt");
 const path = require("path");
