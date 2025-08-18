@@ -637,6 +637,7 @@ useEffect(() => {
         }) ?? false;
 
       if (!hasScheduleToday) {
+      setLoading(false);
         toast.current?.show({
           severity: "warn",
           summary: "Access Denied",

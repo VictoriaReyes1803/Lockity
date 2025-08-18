@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, Notification } from "electron";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import fs from "node:fs";
 // import setupPushReceiver from "electron-push-receiver";
 import Store from "electron-store";
 
@@ -10,9 +11,6 @@ const setupPushReceiver =
   (EPR && (EPR.default || EPR.setup)) ? (EPR.default || EPR.setup) : (EPR);
 
 
-
-
-import Store from "electron-store";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 

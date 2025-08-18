@@ -19,6 +19,6 @@ messaging.onBackgroundMessage((payload) => {
   const n = payload.notification || {};
   const title = n.title || "Lockity";
   const body  = n.body  || "";
-  const icon  = n.icon  || "/icons/icon-192x192.png";
+  const icon  = n.icon  || "/images/logosin.png";
   self.registration.showNotification(title, { body, icon });
 });
